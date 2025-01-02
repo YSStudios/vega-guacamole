@@ -30,10 +30,10 @@ const MapComponent = ({ animationSpeedRef }) => {
   const colorTransitionRef = useRef(null);
   const spinCompleteRef = useRef(false);
   const isSpinningRef = useRef(false);
-  const mouseRef = useRef({ 
-    x: 0, 
-    y: 0, 
-    worldPosition: new THREE.Vector3()
+  const mouseRef = useRef({
+    x: 0,
+    y: 0,
+    worldPosition: new THREE.Vector3(),
   });
   const raycasterRef = useRef(new THREE.Raycaster());
 
@@ -68,7 +68,7 @@ const MapComponent = ({ animationSpeedRef }) => {
     }, 1500);
 
     if (!particlesCreated) {
-      console.log('Initializing particles with color:', particleColor);
+      console.log("Initializing particles with color:", particleColor);
       init(particleColor);
       setParticlesCreated(true);
     }
@@ -80,22 +80,22 @@ const MapComponent = ({ animationSpeedRef }) => {
     if (particlesCreated) return;
 
     const initializeParticles = () => {
-      console.log('Current theme state:', theme);
-      console.log('Initializing particles with color:', particleColor);
-      
+      console.log("Current theme state:", theme);
+      console.log("Initializing particles with color:", particleColor);
+
       init(particleColor);
       setParticlesCreated(true);
     };
 
     const timer = setTimeout(initializeParticles, 100);
-    
+
     return () => clearTimeout(timer);
   }, [theme, particleColor, particlesCreated]);
 
   useEffect(() => {
     if (!particlesCreated) return;
-    
-    console.log('Color transition to:', particleColor);
+
+    console.log("Color transition to:", particleColor);
     if (particlesRef.current && rendererRef.current) {
       startColorTransition(particleColor);
     }
@@ -223,7 +223,7 @@ const MapComponent = ({ animationSpeedRef }) => {
       return;
     }
 
-    console.log('Drawing map with color:', currentParticleColor);
+    console.log("Drawing map with color:", currentParticleColor);
 
     const circleTexture = (() => {
       const canvas = document.createElement("canvas");
@@ -323,7 +323,7 @@ const MapComponent = ({ animationSpeedRef }) => {
   };
 
   const init = (color) => {
-    console.log('Init called with color:', color);
+    console.log("Init called with color:", color);
     console.log("Initializing scene with color:", color);
     rendererRef.current = new THREE.WebGLRenderer({
       antialias: true,
@@ -394,7 +394,27 @@ const MapComponent = ({ animationSpeedRef }) => {
     vector.unproject(cameraRef.current);
     const dir = vector.sub(cameraRef.current.position).normalize();
     const distance = -cameraRef.current.position.z / dir.z;
-    mouseRef.current.worldPosition = cameraRef.current.position.clone().add(dir.multiplyScalar(distance));
+    mouseRef.current.worldPosition = cameraRef.current.position
+      .clone()
+      .add(dir.multiplyScalar(distance));
+  };
+
+  const handleTouchMove = (event) => {
+    event.preventDefault(); // Prevent scrolling while interacting
+    const touch = event.touches[0];
+
+    // Use the same logic as mouse move, but with touch coordinates
+    mouseRef.current.x = (touch.clientX / window.innerWidth) * 2 - 1;
+    mouseRef.current.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+
+    // Convert touch position to world coordinates
+    const vector = new THREE.Vector3(mouseRef.current.x, mouseRef.current.y, 0);
+    vector.unproject(cameraRef.current);
+    const dir = vector.sub(cameraRef.current.position).normalize();
+    const distance = -cameraRef.current.position.z / dir.z;
+    mouseRef.current.worldPosition = cameraRef.current.position
+      .clone()
+      .add(dir.multiplyScalar(distance));
   };
 
   const render = (a) => {
@@ -410,11 +430,14 @@ const MapComponent = ({ animationSpeedRef }) => {
       particlesRef.current.geometry.attributes.destination
     ) {
       const positions = particlesRef.current.geometry.attributes.position.array;
-      const destinations = particlesRef.current.geometry.attributes.destination.array;
+      const destinations =
+        particlesRef.current.geometry.attributes.destination.array;
       const time = Date.now() * 0.0005;
 
       raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
-      const intersects = raycasterRef.current.intersectObject(particlesRef.current);
+      const intersects = raycasterRef.current.intersectObject(
+        particlesRef.current
+      );
 
       const mousePosition = new THREE.Vector3(
         mouseRef.current.x * 200,
@@ -433,7 +456,7 @@ const MapComponent = ({ animationSpeedRef }) => {
 
         const distanceFromCenter = Math.sqrt(
           destinations[i] * destinations[i] +
-          destinations[i + 1] * destinations[i + 1]
+            destinations[i + 1] * destinations[i + 1]
         );
         const amplitude = Math.max(0.2, 1 - distanceFromCenter / 100);
 
@@ -444,16 +467,18 @@ const MapComponent = ({ animationSpeedRef }) => {
         );
 
         // Use world position for distance calculation
-        const distance = particlePosition.distanceTo(mouseRef.current.worldPosition);
+        const distance = particlePosition.distanceTo(
+          mouseRef.current.worldPosition
+        );
         const repulsionRadius = 150;
-        
+
         if (distance < repulsionRadius) {
           const repulsionForce = (1 - distance / repulsionRadius) * 8;
           const angle = Math.atan2(
             particlePosition.y - mouseRef.current.worldPosition.y,
             particlePosition.x - mouseRef.current.worldPosition.x
           );
-          
+
           const wave = Math.sin(distance * 0.05 + time * 2) * 0.5 + 0.5;
           const waveForce = repulsionForce * wave;
 
@@ -471,9 +496,12 @@ const MapComponent = ({ animationSpeedRef }) => {
           positions[i + 2] += jitter;
         }
 
-        positions[i] += Math.sin(time + destinations[i] * 0.01) * amplitude * 0.3;
-        positions[i + 1] += Math.cos(time + destinations[i + 1] * 0.01) * amplitude * 0.3;
-        positions[i + 2] += Math.sin(time * 1.5 + destinations[i + 2] * 0.01) * amplitude * 0.2;
+        positions[i] +=
+          Math.sin(time + destinations[i] * 0.01) * amplitude * 0.3;
+        positions[i + 1] +=
+          Math.cos(time + destinations[i + 1] * 0.01) * amplitude * 0.3;
+        positions[i + 2] +=
+          Math.sin(time * 1.5 + destinations[i + 2] * 0.01) * amplitude * 0.2;
 
         positions[i] += (Math.random() - 0.5) * 0.05;
         positions[i + 1] += (Math.random() - 0.5) * 0.05;
@@ -534,11 +562,13 @@ const MapComponent = ({ animationSpeedRef }) => {
   };
 
   useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
     window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("resize", handleResize);
       cleanup();
     };
@@ -549,10 +579,10 @@ const MapComponent = ({ animationSpeedRef }) => {
 
     isSpinningRef.current = true;
     const camera = cameraRef.current;
-    
+
     const startRadius = Math.sqrt(
-      camera.position.x * camera.position.x + 
-      camera.position.z * camera.position.z
+      camera.position.x * camera.position.x +
+        camera.position.z * camera.position.z
     );
     const startY = camera.position.y;
 
@@ -560,22 +590,25 @@ const MapComponent = ({ animationSpeedRef }) => {
       onComplete: () => {
         isSpinningRef.current = false;
         spinCompleteRef.current = true;
-      }
+      },
     });
 
-    tl.to({}, {
-      duration: 4,
-      onUpdate: function() {
-        const progress = this.progress();
-        const angle = progress * Math.PI * 2;
-        
-        camera.position.x = Math.sin(angle) * startRadius;
-        camera.position.z = Math.cos(angle) * startRadius;
-        camera.position.y = startY;
-        camera.lookAt(0, 0, 0);
-      },
-      ease: "power2.inOut"
-    });
+    tl.to(
+      {},
+      {
+        duration: 4,
+        onUpdate: function () {
+          const progress = this.progress();
+          const angle = progress * Math.PI * 2;
+
+          camera.position.x = Math.sin(angle) * startRadius;
+          camera.position.z = Math.cos(angle) * startRadius;
+          camera.position.y = startY;
+          camera.lookAt(0, 0, 0);
+        },
+        ease: "power2.inOut",
+      }
+    );
   };
 
   return (
