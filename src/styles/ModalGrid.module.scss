@@ -21,6 +21,13 @@
 
 }
 
+.truncate {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 200px; // Adjust this value based on your needs
+  }
+
 .modal_window {
 	position: absolute;
 	width: 460px;
@@ -392,6 +399,7 @@
 
 	.case_studies {
 		top: 1em;
+		height: 19.5em;
 	}
 
 	.player {

@@ -204,6 +204,7 @@ export default function CaseSubModal({
 			  autoPlay={true}
 			  loop
 			  muted
+			  playsInline
 			  width={"100%"}
 			  height={"100%"}
 			  objectfit="cover"

@@ -69,7 +69,7 @@ function ModalNav({
           <path d="M 0 34 L 0 21 C 0 9 9 0 21 0 L 23 0 L 23 38 L 4 38 C 2 38 0 36 0 34 Z" />
         </svg>
         <div>
-          <h2 className={styles.modal_title}>{modalName}</h2>
+          <h2 className={`${styles.modal_title} ${styles.truncate}`}>{modalName}</h2>
         </div>
         <svg
           className={styles.modal_title_after}

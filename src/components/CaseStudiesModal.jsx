@@ -42,9 +42,13 @@ export default function CaseStudiesModal({
 
 	// Ensure image is sized to 230x305 while using the hotspot and crop
 	const getImageUrl = (study) => {
+		// Use a conditional to change dimensions based on screen size
+		const isMobile = window.innerWidth <= 480; // Adjust breakpoint as needed
+		const dimension = isMobile ? 230 : 230; // Use same width for 1:1 ratio on mobile
+		
 		return urlFor(study.image)
-			.width(230)
-			.height(305)
+			.width(dimension)
+			.height(isMobile ? dimension : 305) // Make height equal to width on mobile
 			.fit('crop')
 			.auto('format')
 			.url();
@@ -71,8 +75,8 @@ export default function CaseStudiesModal({
 											src={getImageUrl(study)}
 											alt={study.header}
 											onClick={() => handleCaseStudyClick(study)}
-											height={305}
-											width={230}
+											height="100%"
+											width="100%"
 											loading="lazy"
 										/>
 										<span>{study.header}</span>

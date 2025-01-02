@@ -263,7 +263,6 @@ export async function getServerSideProps(context) {
   ]);
 
   const weatherData = await weatherResponse.json();
-  const instaFeed = await instagramData.json();
 
   return {
     props: {
@@ -272,7 +271,6 @@ export async function getServerSideProps(context) {
       about,
       vegaTv: vegaTvData,
       trans,
-      instaFeed,
       songData,
     },
   };
