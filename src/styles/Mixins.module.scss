@@ -1,0 +1,56 @@
+@mixin fade-in($time: 1s) {
+	opacity: 1;
+	transition: opacity $time, z-index $time, transform $time;
+
+}
+
+@mixin fade-out($time: .5s) {
+	opacity: 0;
+	transition: opacity $time ease-out, z-index $time ease-out $time, visibility $time ease-out $time, transform $time;
+	//  visibility: hidden;
+
+}
+
+body .fadeIn {
+	@include fade-in;
+}
+
+body .fadeOut {
+	@include fade-out;
+}
+
+.loaderButton {
+    position: absolute;
+    top: 85%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    width: 140px; 
+    height: 50px;
+    padding: 0;
+    border: 2px solid black;
+    background-color: transparent;
+    font-weight: 800;
+    font-size: 20px;
+    cursor: pointer;
+    transition: width .2s, height .2s, border-radius .2s, transform .2s, font-size .2s;
+    color: black;
+	border-radius: 2em;
+	opacity: 0;
+}
+
+[data-theme="dark"], [data-theme="inferno"]{
+	.loaderButton {
+		border: 2px solid white;
+		color: white;
+	}
+
+}
+
+.loaderButton:hover {
+    width: 145px;
+    height: 145px;
+    border-radius: 20em;
+    transform: translate(-50%, -50%);
+    font-size: 25px;
+}

@@ -1,0 +1,439 @@
+@import './Mixins.module.scss';
+
+
+
+.modal_container {
+	top: 50px;
+	width: 97%;
+	height: 90%;
+	position: absolute;
+
+	&.fadeOut {
+	@include fade-out;
+		// transform: scale(0);
+		z-index: -1;
+	}
+	
+	&.fadeIn {
+		@include fade-in;
+		
+	}
+
+}
+
+.modal_window {
+	position: absolute;
+	width: 460px;
+	max-width: 90%;
+	height: 18em;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), hsla(210, 4%, 78%, 0.4));
+	border-radius: 1.65em;
+	padding: .5em;
+	overflow: hidden;
+	transform-origin: center center;
+	z-index: 100;
+	box-shadow: rgba(0, 0, 0, 0.25) 12px 12px 18px 2px; //focus style for now
+	backdrop-filter: blur(2.5em);
+	visibility: hidden;
+	opacity: 0;
+	transition: visibility 0.4s ease, opacity 0.4s ease, box-shadow .25s ease-out;
+	min-width: 5em;
+
+	&.fullscreen {
+		width: 95% !important;
+		max-width: 95%;
+		height: 95% !important;
+		max-height: 95%;
+		position: fixed;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%) !important;
+		transition: box-shadow .5s ease;
+		z-index: 10000 !important;
+		box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 50em 10em;
+		background-color: rgb(175 175 175 / 30%);
+		resize: none;
+
+		[data-theme="dark"] & {
+			background-color: rgb(57 57 57 / 30%);
+		};
+	  }
+
+
+	@supports not (backdrop-filter: blur(1px)) {
+		background-color: rgb(124 124 124 / 85%);		
+	}
+  }
+
+  @supports not (backdrop-filter: blur(1px)) {
+	[data-theme="dark"] .modal_window {
+		background-color: rgba(27, 27, 27, 0.85); /* Adjust if needed for dark theme with backdrop-filter support */
+	}
+}
+
+.clean_window {
+	position: absolute;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), hsla(210, 4%, 78%, 0.4));
+	border-radius: 1.65em;
+	padding: .25em;
+	transform-origin: center center;
+	z-index: 100;
+	box-shadow: rgba(0, 0, 0, 0.25) 12px 12px 18px 2px; //focus style for now
+	backdrop-filter: blur(2.5em);
+	visibility: hidden;
+	opacity: 0;
+	transition: visibility 0.4s ease, opacity 0.4s ease, box-shadow .25s ease-out;
+	// left: 5em;
+	// top: 5em;
+
+	&.fullscreen {
+		width: 95%;
+		max-width: 95%;
+		height: 95%;
+		max-height: 95%;
+		position: fixed;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%) !important;
+		transition: box-shadow .5s ease;
+		z-index: 10000 !important;
+		box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 50em 10em;
+		background: none;
+		background-color: rgba(0 0 0 / 90%);
+
+		[data-theme="dark"] & {
+			background-color: rgb(57 57 57 / 63%);
+		};
+	  }
+
+
+	@supports not (backdrop-filter: blur(1px)) {
+		background-color: rgb(124 124 124 / 85%);		
+	}
+  }
+
+  @supports not (backdrop-filter: blur(1px)) {
+	[data-theme="dark"] .modal_window {
+		background-color: rgba(27, 27, 27, 0.85); /* Adjust if needed for dark theme with backdrop-filter support */
+	}
+}
+
+.about {
+	width: 18em;
+	height: 30em;
+	top: 10%;
+	left: 50%;
+	transform: translateX(-50%);
+	overflow-y: hidden;
+	resize: none;
+
+	.modal_nav {
+		visibility: none;
+	}
+
+}
+
+.trans {
+ 	width: 25em;
+	height: 33em;
+	min-height: fit-content;
+
+	video {
+		max-height: 28em;
+		object-fit: cover;
+		border-radius: 1.5em;
+		width: 100%;
+	}
+}
+
+.case_studies {
+	left: 2em;
+	width: 33em;
+	height: 24em;
+	resize: both;
+	min-width: 17em;
+	min-height: 16.5em;
+
+	.modal_content {
+		scroll-snap-type: y mandatory;
+	}
+}
+
+.case_studies_sub {
+	width: 50em;
+	height: 32em;
+	min-width: 40em;
+	min-height: 25em;
+	resize: both;
+}
+
+.instagram {
+	width: 23em;
+	height: 33em;
+}
+
+.player {
+	position: absolute;
+	width: 19.5em;
+	height: auto;
+	overflow: visible;
+	display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 1em 1em 0em 2em;
+    border-style: inset;
+    border: none;
+    border-radius: 2em;
+	backdrop-filter: blur(.5em);
+
+	@media (max-width: 767px) {
+		width: 13em;
+		padding: .5em;
+		border-radius: 1em;
+
+		svg {
+			position: relative;
+			left: 0em;
+			width: 6em;
+
+			//vertical mode
+			// display: block;
+			// position: absolute;
+			// width: 5em;
+			// transform: rotate(90deg);
+			// left: -1.75em;
+			// top: 1.7em;
+			// display: none;
+
+			//left position
+			position: absolute;
+			left: .4em;
+			width: 6em;
+			top: .25em;
+		}
+	}
+}
+
+.vimeo {
+	width: 30em;
+	height: 30em;
+	// min-height: 560px;
+	min-width: 19em;
+
+	video {
+		object-fit: cover;
+		height: 29em;
+		border-radius: 1em;
+	}
+}
+
+.active {
+	visibility: visible;
+	opacity: 1;
+  }
+
+.focus {
+	// backdrop-filter: blur(4.5em);
+	box-shadow: hsla(0, 0%, 0%, 0.25) 12px 12px 18px 2px;
+}
+
+// .modal_nav{
+// 	display:flex;
+// 	justify-content: space-between;
+// 	position: absolute;
+// 	top: .2em;
+// 	right: 1.2em;
+// 	padding: 5px 0.3em 0 0;
+// 	width: 14px;
+// }
+.minimize_window{
+
+	width: 100%;
+	height: 100%;
+	border-radius: 8px;
+	cursor: pointer;
+	z-index: 100;
+	&:hover {
+		filter: brightness(1.2);
+	}
+}
+.close_window{
+	width: 100%;
+	height: 100%;
+	text-align: center;
+	margin-left: .5rem;
+
+	cursor: pointer;
+	border-radius: 8px;
+	z-index: 100;
+	&:hover {
+		filter: brightness(1.2);
+	}
+}
+
+//larger than laptop
+@media (min-width: 1200px) {	
+	.trans {
+		right: 10em;
+		bottom: 5em;
+	}
+	
+	.case_studies {
+		left: 2em;
+		top: 3em;
+	}
+	
+	.case_studies_sub {
+		left: 10em;
+		top: 8em;
+	}
+	
+	.instagram {
+		position: absolute;
+		right: 27%;
+		top: 10%;
+	}
+	
+	.player {
+		right: 3em;
+		top: 3em;
+	}
+	
+	.vimeo {
+		left: 50%;
+		top: 20%;
+		transform: translateX(-50%);
+	}
+  }
+  
+
+@media only screen and (max-width: 1199px) {
+	.trans {
+		right: 10em;
+		bottom: 5em;
+	}
+	
+	.case_studies {
+		top: 3em;
+	}
+	
+	.case_studies_sub {
+		left: 10em;
+		top: 8em;
+	}
+	
+	.instagram {
+		position: absolute;
+		right: 13em;
+		top: 18em;
+	}
+	
+	.player {
+		right: 3em;
+		top: 3em;
+	}
+	
+	.vimeo {
+		left: 50%;
+		top: 5%;
+		transform: translateX(-50%);
+	}
+}
+
+
+@media (max-width: 991px) {
+	.modal_window {
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.case_studies {
+		width: 17em;
+		height: 24.5em;
+		transform: translateX(0%);
+		left: 1em;
+		top: 3em;
+	}
+
+	.case_studies_sub {
+		transform: translateX(0%);
+		width: 44em;
+		height: 28em;
+		top: 10em;
+		// right: 2em;
+		left: 8em;
+		min-width: inherit;
+		min-height: initial;
+	}
+
+	.instagram {
+		// bottom: 0em;
+		left: 13em;
+		top: initial;
+	}
+
+	.player {
+		top: 3em;
+
+		transform: translateX(0%);
+		right: 3.5em;
+		left: initial;
+	}
+
+	.vimeo {
+		// width: 25em;
+		// height: auto;
+	}
+}
+
+//media query for mobile
+@media (max-width: 767px) {
+
+	.case_studies {
+		top: 1em;
+	}
+
+	.player {
+		top: 1em;
+	}
+
+	.instagram {
+		bottom: 0em;
+		left: 13em;
+		top: initial;
+	}
+
+	.case_studies_sub {
+		transform: translateX(0%);
+		width: 22em;
+		height: 28em;
+		top: 10em;
+		// right: 2em;
+		left: 2em;
+	}
+
+	.vimeo {
+		// width: 20em;
+		// height: auto;
+	}
+
+}
+
+@media (max-width: 599px) {
+	.player {
+		top: initial;
+		bottom: 6em;
+		transform: translateX(0%);
+		right: initial;
+		left: 1em;
+	}
+}
+
+.normal {
+	display: block;
+}
+
+.inactive {
+	display: none;
+}

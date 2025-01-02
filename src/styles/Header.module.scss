@@ -1,0 +1,177 @@
+@import './Mixins.module.scss';
+
+.header {
+	opacity: 0;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	position: absolute;
+	top: 0;
+	height: 80px;
+	background-color: #C4C5C633;
+	justify-content: space-between;
+
+	&:before {
+		background-image: url(../assets/svg/header-left-slice-light.svg);
+		background-repeat: no-repeat;
+		content: '';
+		display: block;
+		position: absolute;
+		bottom: -150px;
+		width: 200px;
+		height: 150px;
+	}
+	&:after {
+		background-image: url(../assets/svg/header-right-slice-light.svg);
+		background-repeat: no-repeat;
+		content: '';
+		display: block;
+		position: absolute;
+		top: 5em;
+		width: 31px;
+		height: 32px;
+		right: 64px;
+	}
+}
+
+.deco_container {
+	display: flex;
+	align-items: flex-start;
+	width: 100%;
+	position: absolute;
+	height: 5em;
+	backdrop-filter: blur(3px);
+}
+
+.deco_left {
+	flex: 50%;
+	background-color: black;
+	height: 5px;
+	position: relative;
+	top: 60px;
+}
+
+.deco_middle {
+	background-image: url('../assets/svg/header-deco.svg');
+	background-repeat: no-repeat;
+	background-position: right top;
+	background-size: contain;
+	width: 116px;
+	height: 100%;
+}
+
+.deco_right {
+	flex: 30%;
+	height: 31px;
+	background-color: black;
+	align-self: flex-start;
+	line-height: 4.8;
+	text-align: right;
+	padding-right: 0.5em;
+	font-family: var(--bodyFont);
+	font-size: .5em;
+	color: rgb(121, 121, 121);
+}
+
+.header_logo {
+	background-image: url('../assets/svg/vega-logo.svg');
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: contain;
+	width: 5em;
+    height: 5em;
+    display: block;
+    margin-left: 1.5em;
+    margin-top: 2em;
+	z-index: 1;
+}
+
+//light assets
+[data-theme='dark'] {
+	.header_logo {
+		background-image: url('../assets/svg/vega-logo-light.svg');
+	}
+
+	.deco_left {
+		background-color: white;
+	}
+	
+	.deco_middle {
+		background-image: url('../assets/svg/header-deco-light.svg');
+	}
+	
+	.deco_right {
+		background-color: white;
+	}
+}
+
+[data-theme='guava'] {
+	.header {
+		background-color: #ee589f33;
+
+		&:before {
+			background-image: url(../assets/svg/header-left-slice.svg);
+		}
+		&:after {
+			background-image: url(../assets/svg/header-right-slice.svg);
+		}
+	}
+
+}
+
+//media query for mobile
+@media (max-width: 768px) {
+	.header {
+		height: 3em;
+		&:before {
+			display: none;
+		}
+		&:after {
+			top: 3em;
+			right: 2em;
+		}
+	}
+
+	.header_logo {
+		background-image: url('../assets/svg/vega-logo-mobile.svg');
+		width: 2.15em;
+		height: 2.15em;
+		margin-left: .2em;
+		margin-top: 0em;
+		position: relative;
+		top: -5px;
+	}
+
+	.deco_container {
+		height: 3em;
+	}
+
+	.deco_left {
+		height: 4px;
+		top: 37px;
+		margin-right: -1px;
+	}
+
+	.deco_middle {
+		background-image: url('../assets/svg/header-deco-mobile.svg');
+		background-repeat: no-repeat;
+		background-position: right top;
+		background-size: contain;
+		width: 86px;
+		height: 48px;
+		position: relative;
+	}
+
+	[data-theme='dark'] {
+		.deco_middle {
+			background-image: url('../assets/svg/header-deco-mobile-light.svg');
+		}
+	}
+
+	.deco_right {
+		height: 23px;
+		margin-left: -1px;
+	}
+}
+
+

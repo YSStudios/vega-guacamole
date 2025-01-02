@@ -1,0 +1,72 @@
+.loader{
+	position: fixed;
+	z-index: 9999;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background: #000;
+  }
+  .progress{
+    display: block;
+    width: 100%;
+    top: 90%;
+    justify-content: center;
+    color: #fff;
+    font-size: 3rem;
+    padding-right: 3rem;
+    text-align: center;
+    font-family: "Helvetica Neue";
+  }
+  .loader_title{
+    font-family: "Helvetica Neue";
+  font-size: 3rem;
+  text-transform: uppercase;
+  text-align: center;
+//   border-bottom: 1px solid red;
+  }
+
+.vegalofi {
+position: fixed;
+top: 40%;
+left: 50%;
+transform: translate(-50%, -50%);
+display: inline-block;
+align-items: center;
+}
+
+.progress_container{
+  position: fixed;
+  top: 70%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+display: inline-block;
+  align-items: center;
+  width: 100%;
+  text-align: center;
+  width: 50%;
+  height: 100px;
+  font-size: 2rem;
+}
+.progress_title {
+  background: rgb(251, 63, 63);
+  background: radial-gradient(
+    circle,
+    rgba(251, 63, 63, 1) 0%,
+    rgba(223, 134, 94, 1) 100%
+  );
+  height: 20%;
+  border-radius: 50px;
+  margin-bottom: 2rem;
+}
+
+  /* CSS for a blinking cursor */
+@keyframes blink {
+	0% {opacity: 0;}
+	50% {opacity: 1;}
+	100% {opacity: 0;}
+  }
+  .blink {
+	animation: blink 1s infinite;
+  }
+  

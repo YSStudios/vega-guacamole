@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 96 96" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-miterlimit:10;">
+    <g transform="matrix(1,0,0,1,-21.8394,-25.2512)">
+        <g id="Vega-logo">
+            <g transform="matrix(0,89.6718,89.6718,0,69.7864,28.3281)">
+                <circle cx="0.5" cy="0" r="0.5" style="fill:url(#_Linear1);"/>
+            </g>
+            <g transform="matrix(0,-1,-1,0,69.7865,28.3281)">
+                <circle cx="-44.836" cy="0" r="44.836" style="fill:none;stroke:black;stroke-width:6px;"/>
+            </g>
+            <g transform="matrix(1,0,0,1,74.5647,64.3936)">
+                <path d="M0,15.003C-5.745,21.195 -15.449,33.835 -26.557,33.772C-31.026,33.772 -29.558,26.111 -27.643,21.387L-16.151,-9.256C-15.768,-10.342 -15.449,-11.682 -15.96,-12.831L5.299,-12.831L-5.171,11.428C-5.554,12.705 -5.937,14.365 -5.49,14.939C2.234,12.194 8.618,-18.832 35.878,-16.725L36.07,-15.321C23.174,-17.428 12.194,2.043 0,15.003" style="fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+    <defs>
+        <linearGradient id="_Linear1" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1,0,0,1,0,1.50995e-06)"><stop offset="0" style="stop-color:white;stop-opacity:1"/><stop offset="0.91" style="stop-color:rgb(198,200,201);stop-opacity:1"/><stop offset="1" style="stop-color:rgb(172,174,176);stop-opacity:1"/></linearGradient>
+    </defs>
+</svg>

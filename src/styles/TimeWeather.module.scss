@@ -1,0 +1,59 @@
+.divider {
+	margin-right: 1.5em;
+	position: relative;
+	top: .1em;
+}
+
+// .time_weather_container {
+//   width: 38%;
+//   text-align: right;
+//   position: relative;
+//   overflow: hidden;
+//   top: .5em;
+//   height: 1.2em;
+//   mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 15%);
+//   -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 15%);
+// }
+
+// .time_weather_data {
+// //   animation: slide-left 10s linear infinite;
+// //   position: absolute;
+//   width: max-content;
+//   font-size: 1rem;
+// }
+.time_span{
+  padding-right: 2rem;
+  font-family: var(--headingFont), monospace;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+@keyframes slide-left {
+  from {
+    -webkit-transform: translateX(0);
+
+  }
+  to {
+    -webkit-transform: translateX(-70vw);
+
+  }
+}
+
+[data-theme='dark'] {
+  .time_span {
+    color: white;
+  }
+
+  .divider {
+	filter: invert(1);
+  }
+}
+
+@media (max-width: 768px) {
+	.marquee {
+		font-size: .7em;
+	}
+	.divider {
+		width: 15px;
+	}
+}

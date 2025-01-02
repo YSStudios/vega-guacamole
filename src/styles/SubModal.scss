@@ -1,0 +1,416 @@
+//subModal styles
+.subModal {
+	.title {
+		margin-top: .1em;
+		font-size: 1.5em;
+	}
+	.subtitle {
+		font-family: var(--bodyFont2);
+		font-size: .9em;
+		font-weight: 600;
+	}
+	.project_info {
+		position: relative;
+
+		h3 {
+			position: relative;
+			text-transform: uppercase;
+			margin-left: 2em;
+			&:before {
+				content: "";
+				background-image: url("../assets/svg/globe.svg");
+				background-repeat: no-repeat;
+				position: absolute;
+				top: 0.2em;
+				left: -2em;
+				width: 2em;
+				height: 1em;
+				z-index: -1;
+				background-size: contain;
+
+				[data-theme="dark"] & {
+					filter: invert(1);
+				}
+			}
+		}
+
+		> div {
+			position: relative;
+		}
+	}
+
+	
+
+	.modal_content {
+		padding: 0;
+		overflow: hidden;
+		border-radius: 0;
+	}
+
+	.modal_body {
+		max-width: initial;
+	}
+
+	.portableText {
+		height: 100%;
+		scroll-snap-align: center;
+		scroll-margin: 0.5em;
+		display: flex;
+		justify-content: center;
+		flex-direction: column;
+	}
+
+	.featured_image {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		height: 100%;
+
+		img {
+			width: initial;
+			max-width: 100%;
+			max-height: 100%;
+			height: 100%;
+			margin-bottom: 1em;
+			border-radius: 2em;
+		}
+	}
+}
+
+.services {
+	h3 {
+		text-transform: uppercase;
+	}
+	ul {
+		display: grid;
+		font-size: 1em;
+		padding: 0;
+		grid-gap: .25em;
+		row-gap: .25em;
+		grid-template-columns: repeat(1, 1fr);
+
+		li {
+			border-radius: 0.5em;
+			padding: 0.2em 0.5em;
+			display: flex;
+			align-items: baseline;
+			/* padding-left: 2em; */
+			margin-left: 1em;
+			/* border: 1px solid black; */
+		}
+
+		span {
+			background-color: rgba(155, 155, 155, 0.25);
+			border-radius: 0.5em;
+			font-size: .75em;
+			position: relative;
+			padding: 0.2em 0.5em;
+			text-transform: uppercase;
+			font-weight: 600;
+			
+			&:before {
+				content: "";
+				background-image: url("../assets/svg/star-rounded.svg");
+				background-repeat: no-repeat;
+				position: absolute;
+				top: 0.2em;
+				left: -1.4em;
+				width: 1em;
+				height: 1em;
+				z-index: -1;
+				background-size: contain;
+				display: block;
+			}
+		}
+	}
+}
+
+//submodal image grid
+.image_grid {
+	display: grid;
+	grid-gap: 10px;
+	height: 100%; // Ensures full height usage
+
+	div {
+		overflow: hidden;
+	}
+  
+	img {
+		width: 100%;
+		height: 100%; // Ensures images fill their grid area
+		object-fit: cover; // Makes sure the images don't distort
+		border-radius: .5em;
+	}
+  
+	// For 1 image, it takes up the whole grid
+	&.images-1 {
+		grid-template-columns: 1fr;
+		grid-template-rows: 1fr;
+	}
+  
+	// For 2 images, create a masonry-like layout
+	&.images-2 {
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: auto;
+		
+		div:nth-child(1) {
+			grid-column: span 2;
+		}
+		div:nth-child(2) {
+			grid-column: span 2;
+		}
+	}
+  
+	// For 3 images, create a masonry-like layout
+	&.images-3 {
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: auto auto;
+		
+		div:nth-child(1) {
+			grid-column: span 2;
+		}
+	}
+  
+	// For 4 images, create a masonry-like layout
+	&.images-4 {
+		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-rows: auto auto;
+		
+		div:nth-child(1) {
+			grid-column: span 2;
+		}
+		
+		div:nth-child(4) {
+			grid-column: span 2;
+		}
+	}
+  
+	// For 5 images, use the original layout
+	&.images-5 {
+		grid-template-columns: repeat(3, 1fr); // Three equal columns
+		grid-template-rows: repeat(4, 1fr);    // Four equal rows
+	
+		div:nth-child(1) {
+			grid-area: 1 / 1 / 3 / 4;  // First image spans across the first 3 columns and 2 rows
+		}
+	
+		div:nth-child(2) {
+			grid-area: 3 / 1 / 4 / 2;  // Second image in the first column, third row
+		}
+	
+		div:nth-child(3) {
+			grid-area: 3 / 2 / 4 / 3;  // Third image in the second column, third row
+		}
+	
+		div:nth-child(4) {
+			grid-area: 4 / 1 / 5 / 3;  // Fourth image spans across the first two columns in the fourth row
+		}
+	
+		div:nth-child(5) {
+			grid-area: 3 / 3 / 5 / 4;  // Fifth image spans from the third row to the fifth row in the third column
+		}
+	}
+}
+  
+
+//fullscreen styles
+.fullscreen {
+	.subModal {
+		.project_info {
+			p {
+				padding-left: 4em;
+			}
+
+			//on the 3rd p tag, add an icon to the left
+			p:nth-child(3) {
+				position: relative;
+
+				&:before {
+					content: "";
+					background-image: url("../assets/svg/circle-star.svg");
+					background-repeat: no-repeat;
+					position: absolute;
+					top: 0.2em;
+					left: .5em;
+					width: 2em;
+					height: 2em;
+					z-index: -1;
+					background-size: contain;
+
+					[data-theme="dark"] & {
+						filter: invert(1);
+					}
+				}
+			}
+		}
+
+		.title {
+			font-size: 2em;
+			margin: 0em 0 0.3em 0;
+		}
+
+		h2 {
+			font-size: 1.1em;
+			font-weight: 600;
+		}
+
+		h3 {
+			font-size: 2em;
+			margin-bottom: 0.5em;
+			text-transform: uppercase;
+			max-width: 9em;
+			line-height: 0.8;
+		}
+		.col3 {
+			flex: auto;
+		}
+
+		.services {
+			ul {
+				row-gap: .75em;
+			}
+			span {
+				font-size: 1em;
+
+			}
+		}
+		.modal_content {
+			max-width: initial;
+		}
+		.modal_body {
+			max-width: initial;
+		}
+	}
+}
+
+.col1 {
+	flex: 1 0 24%;
+	position: relative;
+	height: 100%;
+	width: 100%;
+	margin-right: .5em;
+
+	img {
+		border-radius: 0.5em;
+		object-fit: cover;
+	}
+}
+
+.portrait {
+	width: 100%;
+	height: 100%;
+
+	video {
+		object-fit: cover;
+		border-radius: .5em;
+	}
+}
+
+.col2 {
+	flex: 1 0 38%;
+	overflow: hidden;
+	margin-right: 0.5em;
+	// scroll-snap-type: y mandatory;
+	position: relative;
+	scrollbar-width: auto;
+	scrollbar-color: #000000 transparent;
+	height: 100%;
+	width: 100%;
+
+	/* Chrome, Edge, and Safari */
+	&::-webkit-scrollbar {
+		width: 7px;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: #adadad4a;
+		border-radius: 0.7em;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: black;
+		border-radius: 0.7em;
+	}
+
+	img {
+		// scroll-snap-align: center;
+		scroll-margin: 0em;
+		max-height: 99%;
+		max-width: 100%;
+		// transform: translateY(-50%);
+		// top: 50%;
+		position: relative;
+		object-fit: cover;
+	}
+
+	@media screen and (max-width: 768px) {
+		img {
+			scroll-snap-align: none;
+		}
+	}
+}
+
+.col3 {
+	flex: 1 1 35%;
+	padding: 0 0.5em;
+	padding-right: 1em;
+	overflow-y: scroll;
+	max-width: 30em;
+	min-width: 16em;
+}
+
+//responsive 
+@media (max-width: 900px) {
+	.subModal {
+		.modal_content {
+			overflow-y: scroll;
+		}
+	}
+	.col1 {
+		flex: auto;
+		.title {
+			display: block;
+		}
+		.portrait {
+			display: block;
+		}
+		.project_info {
+			display: block;
+		}
+		margin-bottom: 1em;;
+	}
+	.col2 {
+		padding: 0;
+	}
+
+	.col3 {
+		padding: 0;
+		width: 100%;
+		max-width: 100%;
+		.title {
+			display: none;
+		}
+		.subtitle {
+			display: none;
+		}
+	}
+}
+
+@media (max-width: 900px) {
+	.subModal .modal_body {
+		flex-direction: column;
+		height: 100%;
+	}
+	.col3,
+	.col2 {
+		flex: 1 0 100%;
+		// scroll-snap-align: center;
+		overflow: visible;
+		height: 100%;
+	}
+
+	.col3 {
+		flex-basis: auto;
+		height: auto;
+	}
+}

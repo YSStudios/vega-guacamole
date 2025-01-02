@@ -1,0 +1,116 @@
+.nav_button {
+	text-decoration: none;
+	display: inline-block;
+	outline: none;
+	cursor: pointer;
+	border-style: none;
+	color: transparent;
+	background: transparent;
+	text-align: center;
+	padding: 0;
+	transition: scale .2s ease-in-out;
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: contain;
+	margin-bottom: -30px;
+	overflow: visible;
+	width: 100%;
+	position: relative; /* Added to position the span correctly */
+  }
+  
+  .nav_button:before {
+	content: '';
+	display: inline-block;
+	vertical-align: middle;
+	padding-top: 100%;
+  }
+  
+  .nav_button:hover {
+	transform: scale(1.1);
+	transition: scale 1s ease-out;
+  }
+  
+  .nav_button_span {
+	position: absolute;
+	top: 9em;
+	left: 50%;
+	transform: translateX(-50%);
+	display: inline-block;
+	vertical-align: middle;
+	max-width: 90%;
+	transition: top .5s ease;
+	opacity: 0;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	color: black;
+	font-weight: 900;
+	text-shadow: 1px 5px 7px #0000008a;
+  }
+  
+  
+  .nav_button:hover .nav_button_span {
+	opacity: 1; 
+	transition: top .5s ease-out, left .5s ease-out, opacity 1s ease-out;
+	z-index: 99999;
+	font-family: var(--bodyFont);
+	top: 45%;
+	left: 45%;
+
+  }
+
+  [data-theme='light'] {
+	.nav_button {
+		filter: contrast(1.4);
+	}
+  }
+
+  [data-theme='dark'] {
+	.nav_button_span {
+		color: white;
+	}
+  }
+  
+  .shop {
+	background-image: url('../assets/svg/nav-btn-product@2x.png');
+  }
+  
+  .about {
+	background-image: url('../assets/svg/nav-btn-about@2x.png');
+  }
+  
+  .case_studies {
+	background-image: url('../assets/svg/nav-btn-case-studies@2x.png');
+  }
+  
+  .transparency {
+	background-image: url('../assets/svg/nav-btn-transparency@2x.png');
+  }
+  
+  .vimeo {
+	background-image: url('../assets/svg/nav-btn-vimeo@2x.png');
+  }
+
+  .character {
+	position: absolute;
+	// Offset the text by 50% of its width and height
+	// to center it over the .nav_button
+	transform-origin: bottom center;
+	left: 50%;
+	bottom: 50%;
+	// Other styles
+  }
+  
+  
+//media query for mobile
+@media (max-width: 768px) {
+	.nav_button {
+		// width: 70px;
+		// height: 135px;
+		// margin-bottom: -46px;
+	}
+
+	.case_studies {
+
+	}
+}

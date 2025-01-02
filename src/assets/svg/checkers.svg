@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 106.57 104.52">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #231f20;
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <path class="cls-1" d="m4.82,4.72h97.1v95.08H4.82V4.72ZM.17,104.36h106.4V.16H.17v104.2Z"/>
+    <rect class="cls-1" x="2.49" y="2.44" width="25.19" height="24.67"/>
+    <path class="cls-1" d="m29.86,4.88h20.21v19.79h-20.21V4.88Zm-4.98,24.67h30.18V0h-30.18v29.55Z"/>
+    <rect class="cls-1" x="53.33" y="2.44" width="25.19" height="24.67"/>
+    <path class="cls-1" d="m81.15,4.88h20.21v19.79h-20.21V4.88Zm-4.98,24.67h30.18V0h-30.18v29.55Z"/>
+    <path class="cls-1" d="m4.98,79.85h20.21v19.79H4.98v-19.79ZM0,104.52h30.18v-29.55H0v29.55Z"/>
+    <rect class="cls-1" x="27.37" y="77.41" width="25.19" height="24.67"/>
+    <path class="cls-1" d="m55.83,79.85h20.21v19.79h-20.21v-19.79Zm-4.98,24.67h30.18v-29.55h-30.18v29.55Z"/>
+    <rect class="cls-1" x="78.66" y="77.41" width="25.19" height="24.67"/>
+    <rect class="cls-1" x="2.49" y="52.57" width="25.19" height="24.67"/>
+    <path class="cls-1" d="m29.86,74.8h20.21v-19.79h-20.21v19.79Zm25.19,4.88h-30.18v-29.55h30.18v29.55Z"/>
+    <rect class="cls-1" x="53.33" y="52.57" width="25.19" height="24.67"/>
+    <path class="cls-1" d="m81.15,55.01h20.21v19.79h-20.21v-19.79Zm-4.98,24.67h30.18v-29.55h-30.18v29.55Z"/>
+    <path class="cls-1" d="m4.98,28.73h20.21v19.79H4.98v-19.79ZM0,53.4h30.18v-29.55H0v29.55Z"/>
+    <rect class="cls-1" x="27.37" y="26.29" width="25.19" height="24.67"/>
+    <path class="cls-1" d="m55.83,48.52h20.21v-19.79h-20.21v19.79Zm25.19,4.88h-30.18v-29.55h30.18v29.55Z"/>
+    <rect class="cls-1" x="78.66" y="26.29" width="25.19" height="24.67"/>
+  </g>
+</svg>

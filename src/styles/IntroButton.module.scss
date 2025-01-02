@@ -1,0 +1,64 @@
+.introButton {
+    position: absolute;
+    top: 85%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    width: 140px;
+    height: 50px;
+    padding: 0;
+    border: 2px solid black;
+    background-color: transparent;
+    font-weight: 800;
+    font-size: 20px;
+    cursor: pointer;
+    transition: width 0.2s, height 0.2s, border-radius 0.2s, transform 0.2s, font-size 0.2s, opacity 0.5s;
+    color: black;
+    border-radius: 2em;
+    overflow: hidden;
+  
+    &:focus {
+      outline: none;
+    }
+  
+    &:hover, &.hovered {
+      width: 145px;
+      height: 145px;
+      border-radius: 20em;
+      transform: translate(-50%, -50%);
+      font-size: 25px;
+    }
+  
+    &.completed {
+      cursor: default;
+      pointer-events: none;
+    }
+  }
+  
+  .buttonText {
+    position: relative;
+    z-index: 10;
+  }
+  
+  .fillBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    transition: height 100ms linear;
+  }
+  [data-theme="light"] {
+    .introButton{
+      color: black;
+      border: 2px solid black;
+    }
+  }
+[data-theme="dark"],
+[data-theme="inferno"]{
+  .introButton{
+    color: white;
+    border: 2px solid white;
+    color: white;
+  }
+}
