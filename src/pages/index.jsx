@@ -258,8 +258,12 @@ export async function getServerSideProps(context) {
       },
       active
     }`),
-    fetch(`https://api.openweathermap.org/data/2.5/weather?q=new york&units=imperial&appid=${process.env.NEXT_PUBLIC_WEATHER_KEY}`),
-    fetch(`http://graph.instagram.com/me/media?fields=id,caption,media_url,timestamp,media_type,permalink,thumbnail_url&access_token=${process.env.NEXT_PUBLIC_INSTAGRAM_KEY}`),
+    fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=new york&units=imperial&appid=${process.env.NEXT_PUBLIC_WEATHER_KEY}`
+    ),
+    fetch(
+      `http://graph.instagram.com/me/media?fields=id,caption,media_url,timestamp,media_type,permalink,thumbnail_url&access_token=${process.env.NEXT_PUBLIC_INSTAGRAM_KEY}`
+    ),
   ]);
 
   const weatherData = await weatherResponse.json();
