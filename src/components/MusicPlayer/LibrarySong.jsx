@@ -7,12 +7,11 @@ const LibrarySong = ({
   songs,
   setCurrentSong,
   audioRef,
-  isPlaying,
   setSongs,
   urlFor,
 }) => {
-  const songSelectHandler = () => {
-    setCurrentSong(song);
+  const songSelectHandler = async () => {
+    await setCurrentSong(song);
     // Set Active in library
     const newSongs = songs.map((s) => ({
       ...s,
@@ -20,7 +19,7 @@ const LibrarySong = ({
     }));
     setSongs(newSongs);
     // Play audio
-    playAudio(isPlaying, audioRef);
+    playAudio(true, audioRef);
   };
 
   if (!song) {

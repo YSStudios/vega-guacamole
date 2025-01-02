@@ -457,7 +457,6 @@ export default function ModalGrid({
             height={500}
             toggle={toggleInstagramActive}
             activeModal={active.instagramActive}
-            instaFeed={instaFeed.data}
             id={`instagramRef`}
             draggablesRef={draggablesRef}
           />
