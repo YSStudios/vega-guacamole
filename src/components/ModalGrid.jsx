@@ -12,6 +12,7 @@ import MusicPlayer from "../components/MusicPlayer/MusicPlayer";
 import CaseSubModal from "../components/CaseSubModal";
 import Lightbox from "../components/LightBox";
 import useDelayedStyles from "../hooks/useDelayedStyles";
+import { INSTAGRAM_FEED, INSTAGRAM_MODAL_ASSETS } from "../types/instagram";
 
 import {
   modalValue,
@@ -458,6 +459,8 @@ export default function ModalGrid({
             activeModal={active.instagramActive}
             id={`instagramRef`}
             draggablesRef={draggablesRef}
+            instaFeed={INSTAGRAM_FEED}
+            assets={INSTAGRAM_MODAL_ASSETS}
           />
         </div>
 
