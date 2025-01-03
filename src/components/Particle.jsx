@@ -406,21 +406,22 @@ const MapComponent = ({ animationSpeedRef }) => {
   };
 
   const handleTouchMove = (event) => {
-    event.preventDefault(); // Prevent scrolling while interacting
-    const touch = event.touches[0];
+    // Check against the canvas element
+    if (event.target === rendererRef.current?.domElement) {
+      event.preventDefault();
+      const touch = event.touches[0];
 
-    // Use the same logic as mouse move, but with touch coordinates
-    mouseRef.current.x = (touch.clientX / window.innerWidth) * 2 - 1;
-    mouseRef.current.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+      mouseRef.current.x = (touch.clientX / window.innerWidth) * 2 - 1;
+      mouseRef.current.y = -(touch.clientY / window.innerHeight) * 2 + 1;
 
-    // Convert touch position to world coordinates
-    const vector = new THREE.Vector3(mouseRef.current.x, mouseRef.current.y, 0);
-    vector.unproject(cameraRef.current);
-    const dir = vector.sub(cameraRef.current.position).normalize();
-    const distance = -cameraRef.current.position.z / dir.z;
-    mouseRef.current.worldPosition = cameraRef.current.position
-      .clone()
-      .add(dir.multiplyScalar(distance));
+      const vector = new THREE.Vector3(mouseRef.current.x, mouseRef.current.y, 0);
+      vector.unproject(cameraRef.current);
+      const dir = vector.sub(cameraRef.current.position).normalize();
+      const distance = -cameraRef.current.position.z / dir.z;
+      mouseRef.current.worldPosition = cameraRef.current.position
+        .clone()
+        .add(dir.multiplyScalar(distance));
+    }
   };
 
   const render = (a) => {
@@ -569,12 +570,13 @@ const MapComponent = ({ animationSpeedRef }) => {
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    // Access the canvas element through domElement
+    rendererRef.current?.domElement?.addEventListener("touchmove", handleTouchMove, { passive: false });
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("touchmove", handleTouchMove);
+      rendererRef.current?.domElement?.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("resize", handleResize);
       cleanup();
     };
