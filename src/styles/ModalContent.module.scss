@@ -104,6 +104,13 @@
 	align-items: center;
 	margin-left: -1px;
 	white-space: nowrap;
+
+	@media (max-width: 768px) {
+		max-width: 12em;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 }
 
 .modal_title_before {

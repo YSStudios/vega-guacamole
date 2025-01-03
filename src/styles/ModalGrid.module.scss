@@ -21,12 +21,6 @@
 
 }
 
-.truncate {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	max-width: 200px; // Adjust this value based on your needs
-  }
 
 .modal_window {
 	position: absolute;
@@ -422,8 +416,12 @@
 	}
 
 	.vimeo {
-		// width: 20em;
-		// height: auto;
+		width: 20em;
+		height: 20em;
+
+		video {
+			height: 19em;
+		}
 	}
 
 }

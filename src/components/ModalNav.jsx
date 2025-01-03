@@ -1,9 +1,10 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import styles from "../styles/Styles.module.scss";
 import { useSelector, useDispatch } from "react-redux";
 import Image from "next/image";
 import maximizeBtn from "../assets/svg/maximize-btn.svg";
 import closeBtn from "../assets/svg/close-btn.svg";
+import Marquee from 'react-fast-marquee';
 
 function ModalNav({
   modalName,
@@ -17,6 +18,23 @@ function ModalNav({
   noDragTrigger
 }) {
   const audioRef = useRef(null);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsSmallScreen(window.innerWidth <= 768);
+    };
+
+    // Check on mount
+    checkScreenSize();
+
+    // Add resize listener
+    window.addEventListener('resize', checkScreenSize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
   const handleMaximizeClick = () => {
     ////play the audio file if the modal is not fullscreen, otherwise play a different audio file if the modal is fullscreen
 	if (!modalRef.current.classList.contains(styles.fullscreen)) {
@@ -69,7 +87,15 @@ function ModalNav({
           <path d="M 0 34 L 0 21 C 0 9 9 0 21 0 L 23 0 L 23 38 L 4 38 C 2 38 0 36 0 34 Z" />
         </svg>
         <div>
-          <h2 className={`${styles.modal_title} ${styles.truncate}`}>{modalName}</h2>
+          <h2 className={`${styles.modal_title} ${styles.truncate}`}>
+            {modalName?.length > 15 && isSmallScreen ? (
+              <Marquee  gradient={false} speed={20}>
+                {modalName}
+              </Marquee>
+            ) : (
+              modalName
+            )}
+          </h2>
         </div>
         <svg
           className={styles.modal_title_after}
