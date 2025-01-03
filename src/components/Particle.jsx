@@ -361,8 +361,14 @@ const MapComponent = ({ animationSpeedRef }) => {
       cameraRef.current,
       rendererRef.current.domElement
     );
-    controls.minPolarAngle = Math.PI / 4;
-    controls.maxPolarAngle = (3 * Math.PI) / 4;
+
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+    if (isTouchDevice) {
+      controls.enabled = false;
+    } else {
+      controls.minPolarAngle = Math.PI / 4;
+      controls.maxPolarAngle = (3 * Math.PI) / 4;
+    }
 
     composerRef.current = new EffectComposer(rendererRef.current);
     const renderScene = new RenderPass(sceneRef.current, cameraRef.current);
