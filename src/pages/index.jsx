@@ -138,135 +138,148 @@ export default function Home({
 }
 
 export async function getServerSideProps(context) {
-  // Fetch data in parallel to improve performance
-  const [
-    caseStudies,
-    vegaTvData,
-    about,
-    trans,
-    songData,
-    weatherResponse,
-    instagramData,
-  ] = await Promise.all([
-    client.fetch(`*[_type == "caseStudies" && !(_id in path("drafts.**"))]{
-      header,
-      image {
-        asset->{url, metadata},
-        hotspot
-      },
-      featuredImage,
-      body,
-      projectBreakdown,
-      portrait[]{
-        asset->{_id, _type, url}
-      },
-      imageGallery1,
-      body2,
-      order,
-      title,
-      subtitle,
-      services
-    } | order(order asc)`),
-    client.fetch('*[_type == "vegaTv"][0]'),
-    client.fetch(`*[_type == "about"]{
-      header,
-      "logoWebMUrl": logoWebm.asset->url,
-      "logoMovUrl": logoMov.asset->url,
-      imagesGallery,
-      body,
-      imagesGallery2[] {
+  try {
+    // Log to verify the environment variable is available
+    console.log("Weather API Key available:", !!process.env.WEATHER_KEY);
+
+    // Fetch all data in parallel
+    const [weatherResponse, caseStudies, vegaTvData, about, trans, songData] =
+      await Promise.all([
+        fetch(
+          "https://api.openweathermap.org/data/2.5/weather?" +
+            new URLSearchParams({
+              q: "new york",
+              units: "imperial",
+              appid: process.env.WEATHER_KEY,
+            })
+        ),
+        client.fetch(`*[_type == "caseStudies" && !(_id in path("drafts.**"))]{
+        header,
         image {
-          asset->,
-          hotspot,
-          crop
+          asset->{url, metadata},
+          hotspot
         },
-        name,
-        title
-      },
-      body2,
-      skill1 {
+        featuredImage,
+        body,
+        projectBreakdown,
+        portrait[]{
+          asset->{_id, _type, url}
+        },
+        imageGallery1,
+        body2,
+        order,
         title,
-        list
-      },
-      skill2 {
-        title,
-        list
-      },
-      skill3 {
-        title,
-        list
-      }
-    }`),
-    client.fetch(`*[_type == "Gen-Synth"]{
-      header,
-      imagesGallery[] {
-        asset->
-      },
-      body,
-      videos[] {
-        videoUrl,
-        videoLink,
-        thumbnail {
+        subtitle,
+        services
+      } | order(order asc)`),
+        client.fetch('*[_type == "vegaTv"][0]'),
+        client.fetch(`*[_type == "about"]{
+        header,
+        "logoWebMUrl": logoWebm.asset->url,
+        "logoMovUrl": logoMov.asset->url,
+        imagesGallery,
+        body,
+        imagesGallery2[] {
+          image {
+            asset->,
+            hotspot,
+            crop
+          },
+          name,
+          title
+        },
+        body2,
+        skill1 {
+          title,
+          list
+        },
+        skill2 {
+          title,
+          list
+        },
+        skill3 {
+          title,
+          list
+        }
+      }`),
+        client.fetch(`*[_type == "Gen-Synth"]{
+        header,
+        imagesGallery[] {
           asset->
-        }
-      },
-      body2
-    }`),
-    client.fetch(`*[_type == "song"] {
-      _id,
-      _createdAt,
-      _updatedAt,
-      name,
-      artist,
-      cover,
-      audio,
-      color[]{
-        _key,
-        _type,
-        alpha,
-        hex,
-        hsl->{
-          _type,
-          h,
-          s,
-          l,
-          a
         },
-        hsv->{
-          _type,
-          h,
-          s,
-          v,
-          a
+        body,
+        videos[] {
+          videoUrl,
+          videoLink,
+          thumbnail {
+            asset->
+          }
         },
-        rgb->{
+        body2
+      }`),
+        client.fetch(`*[_type == "song"] {
+        _id,
+        _createdAt,
+        _updatedAt,
+        name,
+        artist,
+        cover,
+        audio,
+        color[]{
+          _key,
           _type,
-          r,
-          g,
-          b,
-          a
-        }
+          alpha,
+          hex,
+          hsl->{
+            _type,
+            h,
+            s,
+            l,
+            a
+          },
+          hsv->{
+            _type,
+            h,
+            s,
+            v,
+            a
+          },
+          rgb->{
+            _type,
+            r,
+            g,
+            b,
+            a
+          }
+        },
+        active
+      }`),
+      ]);
+
+    const weatherData = await weatherResponse.json();
+
+    return {
+      props: {
+        weatherData,
+        caseStudies,
+        about,
+        vegaTv: vegaTvData,
+        trans,
+        songData,
       },
-      active
-    }`),
-    fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=new york&units=imperial&appid=${process.env.NEXT_PUBLIC_WEATHER_KEY}`
-    ),
-    fetch(
-      `http://graph.instagram.com/me/media?fields=id,caption,media_url,timestamp,media_type,permalink,thumbnail_url&access_token=${process.env.NEXT_PUBLIC_INSTAGRAM_KEY}`
-    ),
-  ]);
-
-  const weatherData = await weatherResponse.json();
-
-  return {
-    props: {
-      weatherData,
-      caseStudies,
-      about,
-      vegaTv: vegaTvData,
-      trans,
-      songData,
-    },
-  };
+    };
+  } catch (error) {
+    console.error("Error in getServerSideProps:", error);
+    // Return null/empty values for all props when there's an error
+    return {
+      props: {
+        weatherData: null,
+        caseStudies: [],
+        about: null,
+        vegaTv: null,
+        trans: null,
+        songData: null,
+      },
+    };
+  }
 }

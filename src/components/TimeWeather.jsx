@@ -11,6 +11,7 @@ import vega from "../assets/svg/vega-logo-mobile.svg";
 export default function Weather({ weatherData }) {
   const [time, setTime] = useState();
   const [date, setDate] = useState();
+
   useEffect(() => {
     const updateTime = () => {
       const now = moment();
