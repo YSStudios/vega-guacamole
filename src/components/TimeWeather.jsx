@@ -42,6 +42,7 @@ export default function Weather({ weatherData }) {
         className={styles.divider}
         src={rectangles}
         width={20}
+        height={20}
         alt="icon"
       ></Image>
       <span className={styles.time_span}>
@@ -52,6 +53,7 @@ export default function Weather({ weatherData }) {
         className={styles.divider}
         src={sparkle}
         width={20}
+        height={20}
         alt="icon"
       ></Image>
       <span className={styles.time_span}>{date}</span>
@@ -59,6 +61,7 @@ export default function Weather({ weatherData }) {
         className={styles.divider}
         src={earth}
         width={20}
+        height={20}
         alt="icon"
       ></Image>
       <span className={styles.time_span}>New York, NYC</span>

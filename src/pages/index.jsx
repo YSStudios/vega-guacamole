@@ -87,15 +87,6 @@ export default function Home({
     }
   }, [showButton]);
 
-  useEffect(() => {
-    gsap.to(".fadeIn", {
-      opacity: loaderActive ? 0 : 1,
-      duration: 5,
-      stagger: loaderActive ? 0 : 0.5,
-      ease: "power2.inOut",
-    });
-  }, [loaderActive]);
-
   return (
     <App>
       <Particle animationSpeedRef={animationSpeedRef} />
@@ -113,8 +104,7 @@ export default function Home({
       <ThemeSelector />
       <Header
         weatherData={weatherData}
-        className="fadeIn"
-        style={{ opacity: 0 }}
+        className={`fadeIn ${!loaderActive ? styles.fadeIn : styles.fadeOut}`}
       />
       <SidebarRight
         handleFocus={handleFocus}

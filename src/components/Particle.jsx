@@ -36,6 +36,10 @@ const MapComponent = ({ animationSpeedRef }) => {
     worldPosition: new THREE.Vector3(),
   });
   const raycasterRef = useRef(new THREE.Raycaster());
+  const touchInteractionRef = useRef(false);
+  const touchFadeOutRef = useRef(null);
+  const touchInteractionStrengthRef = useRef(0);
+  const hasInteractedRef = useRef(false);
 
   let ww = typeof window !== "undefined" ? window.innerWidth : 800;
   let wh = typeof window !== "undefined" ? window.innerHeight : 600;
@@ -68,7 +72,7 @@ const MapComponent = ({ animationSpeedRef }) => {
     }, 1500);
 
     if (!particlesCreated) {
-      console.log("Initializing particles with color:", particleColor);
+      
       init(particleColor);
       setParticlesCreated(true);
     }
@@ -80,9 +84,6 @@ const MapComponent = ({ animationSpeedRef }) => {
     if (particlesCreated) return;
 
     const initializeParticles = () => {
-      console.log("Current theme state:", theme);
-      console.log("Initializing particles with color:", particleColor);
-
       init(particleColor);
       setParticlesCreated(true);
     };
@@ -94,8 +95,6 @@ const MapComponent = ({ animationSpeedRef }) => {
 
   useEffect(() => {
     if (!particlesCreated) return;
-
-    console.log("Color transition to:", particleColor);
     if (particlesRef.current && rendererRef.current) {
       startColorTransition(particleColor);
     }
@@ -103,7 +102,6 @@ const MapComponent = ({ animationSpeedRef }) => {
 
   useEffect(() => {
     if (!loaderActive && particlesInitialized && !spinCompleteRef.current) {
-      console.log("Triggering camera spin");
       spinCamera();
     }
   }, [loaderActive, particlesInitialized]);
@@ -118,13 +116,6 @@ const MapComponent = ({ animationSpeedRef }) => {
     if (!cameraRef.current) return;
 
     const camera = cameraRef.current;
-    console.log("Camera before animation:", {
-      x: camera.position.x,
-      y: camera.position.y,
-      z: camera.position.z,
-      fov: camera.fov,
-    });
-
     if (stage === "initial") {
       gsap.set(camera.position, { x: 0, y: 0, z: 50 });
       gsap.to(camera.position, {
@@ -146,7 +137,6 @@ const MapComponent = ({ animationSpeedRef }) => {
       !particlesRef.current.material ||
       !rendererRef.current
     ) {
-      console.error("Required objects not initialized");
       return;
     }
 
@@ -216,15 +206,11 @@ const MapComponent = ({ animationSpeedRef }) => {
 
   const drawTheMap = (currentParticleColor, imagedata) => {
     if (!imagedata) {
-      console.warn("Image data is not yet available.");
       return;
     }
     if (particlesRef.current) {
       return;
     }
-
-    console.log("Drawing map with color:", currentParticleColor);
-
     const circleTexture = (() => {
       const canvas = document.createElement("canvas");
       const size = 256;
@@ -323,8 +309,6 @@ const MapComponent = ({ animationSpeedRef }) => {
   };
 
   const init = (color) => {
-    console.log("Init called with color:", color);
-    console.log("Initializing scene with color:", color);
     rendererRef.current = new THREE.WebGLRenderer({
       antialias: true,
       canvas: rendererRef.current,
@@ -391,11 +375,31 @@ const MapComponent = ({ animationSpeedRef }) => {
   };
 
   const handleMouseMove = (event) => {
-    // Convert mouse coordinates to normalized device coordinates (-1 to +1)
+    if (window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
+    
+    hasInteractedRef.current = true;
     mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    updateWorldPosition();
+  };
 
-    // Convert mouse position to world coordinates
+  const handleTouchMove = (event) => {
+    // Only handle touch events on the canvas
+    if (event.target === rendererRef.current?.domElement) {
+      // Only prevent default on the canvas to allow scrolling elsewhere
+      event.preventDefault();
+      const touch = event.touches[0];
+
+      mouseRef.current.x = (touch.clientX / window.innerWidth) * 2 - 1;
+      mouseRef.current.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+      updateWorldPosition();
+    }
+  };
+
+  // Separate the world position calculation into its own function
+  const updateWorldPosition = () => {
     const vector = new THREE.Vector3(mouseRef.current.x, mouseRef.current.y, 0);
     vector.unproject(cameraRef.current);
     const dir = vector.sub(cameraRef.current.position).normalize();
@@ -405,23 +409,38 @@ const MapComponent = ({ animationSpeedRef }) => {
       .add(dir.multiplyScalar(distance));
   };
 
-  const handleTouchMove = (event) => {
-    // Check against the canvas element
+  const handleTouchStart = (event) => {
     if (event.target === rendererRef.current?.domElement) {
       event.preventDefault();
+      hasInteractedRef.current = true;
+      touchInteractionRef.current = true;
+      if (touchFadeOutRef.current) {
+        clearInterval(touchFadeOutRef.current);
+      }
+      touchInteractionStrengthRef.current = 1;
+      
       const touch = event.touches[0];
-
       mouseRef.current.x = (touch.clientX / window.innerWidth) * 2 - 1;
       mouseRef.current.y = -(touch.clientY / window.innerHeight) * 2 + 1;
-
-      const vector = new THREE.Vector3(mouseRef.current.x, mouseRef.current.y, 0);
-      vector.unproject(cameraRef.current);
-      const dir = vector.sub(cameraRef.current.position).normalize();
-      const distance = -cameraRef.current.position.z / dir.z;
-      mouseRef.current.worldPosition = cameraRef.current.position
-        .clone()
-        .add(dir.multiplyScalar(distance));
+      updateWorldPosition();
     }
+  };
+
+  const handleTouchEnd = () => {
+    // Reset mouse position to be far away when touch ends
+    mouseRef.current.x = 10000;
+    mouseRef.current.y = 10000;
+    updateWorldPosition();
+    
+    // Start fade out animation
+    touchFadeOutRef.current = setInterval(() => {
+      touchInteractionStrengthRef.current -= 0.05;
+      if (touchInteractionStrengthRef.current <= 0) {
+        touchInteractionStrengthRef.current = 0;
+        touchInteractionRef.current = false;
+        clearInterval(touchFadeOutRef.current);
+      }
+    }, 16);
   };
 
   const render = (a) => {
@@ -479,28 +498,36 @@ const MapComponent = ({ animationSpeedRef }) => {
         );
         const repulsionRadius = 150;
 
-        if (distance < repulsionRadius) {
-          const repulsionForce = (1 - distance / repulsionRadius) * 8;
-          const angle = Math.atan2(
-            particlePosition.y - mouseRef.current.worldPosition.y,
-            particlePosition.x - mouseRef.current.worldPosition.x
-          );
+        if (distance < repulsionRadius && hasInteractedRef.current) {
+          // Only apply repulsion if not on touch device or touch interaction is active
+          const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+          const shouldApplyRepulsion = !isTouchDevice || touchInteractionRef.current;
+          
+          if (shouldApplyRepulsion) {
+            const strength = isTouchDevice ? touchInteractionStrengthRef.current : 1;
+            const repulsionForce = (1 - distance / repulsionRadius) * 8 * strength;
+            
+            const angle = Math.atan2(
+              particlePosition.y - mouseRef.current.worldPosition.y,
+              particlePosition.x - mouseRef.current.worldPosition.x
+            );
 
-          const wave = Math.sin(distance * 0.05 + time * 2) * 0.5 + 0.5;
-          const waveForce = repulsionForce * wave;
+            const wave = Math.sin(distance * 0.05 + time * 2) * 0.5 + 0.5;
+            const waveForce = repulsionForce * wave;
 
-          const spiralAngle = distance * 0.01 + time;
-          const spiralX = Math.cos(spiralAngle) * waveForce * 2;
-          const spiralY = Math.sin(spiralAngle) * waveForce * 2;
+            const spiralAngle = distance * 0.01 + time;
+            const spiralX = Math.cos(spiralAngle) * waveForce * 2;
+            const spiralY = Math.sin(spiralAngle) * waveForce * 2;
 
-          positions[i] += Math.cos(angle) * repulsionForce * 2 + spiralX;
-          positions[i + 1] += Math.sin(angle) * repulsionForce * 2 + spiralY;
-          positions[i + 2] += Math.sin(time * 2) * waveForce * 2;
+            positions[i] += Math.cos(angle) * repulsionForce * 2 + spiralX;
+            positions[i + 1] += Math.sin(angle) * repulsionForce * 2 + spiralY;
+            positions[i + 2] += Math.sin(time * 2) * waveForce * 2;
 
-          const jitter = Math.sin(time * 10 + distance) * 0.2;
-          positions[i] += jitter;
-          positions[i + 1] += jitter;
-          positions[i + 2] += jitter;
+            const jitter = Math.sin(time * 10 + distance) * 0.2;
+            positions[i] += jitter;
+            positions[i + 1] += jitter;
+            positions[i + 2] += jitter;
+          }
         }
 
         positions[i] +=
@@ -569,15 +596,32 @@ const MapComponent = ({ animationSpeedRef }) => {
   };
 
   useEffect(() => {
+    if (rendererRef.current?.domElement) {
+      const canvas = rendererRef.current.domElement;
+      canvas.style.touchAction = 'none';  // Only disable touch actions on the canvas
+      canvas.style.userSelect = 'none';   // Prevent text selection
+    }
+
     window.addEventListener("mousemove", handleMouseMove);
-    // Access the canvas element through domElement
-    rendererRef.current?.domElement?.addEventListener("touchmove", handleTouchMove, { passive: false });
+    const canvas = rendererRef.current?.domElement;
+    if (canvas) {
+      canvas.addEventListener("touchmove", handleTouchMove, { passive: false });
+      canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
+      canvas.addEventListener("touchend", handleTouchEnd);
+    }
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
-      rendererRef.current?.domElement?.removeEventListener("touchmove", handleTouchMove);
+      if (canvas) {
+        canvas.removeEventListener("touchmove", handleTouchMove);
+        canvas.removeEventListener("touchstart", handleTouchStart);
+        canvas.removeEventListener("touchend", handleTouchEnd);
+      }
       window.removeEventListener("resize", handleResize);
+      if (touchFadeOutRef.current) {
+        clearInterval(touchFadeOutRef.current);
+      }
       cleanup();
     };
   }, []);
@@ -663,7 +707,10 @@ const MapComponent = ({ animationSpeedRef }) => {
       <canvas
         className={styles.mainbg}
         ref={rendererRef}
-        style={{ opacity: 1 }}
+        style={{ 
+          opacity: 1,
+          pointerEvents: !loaderActive ? 'none' : 'auto' // Disable pointer events when loader is not active
+        }}
       />
     </>
   );
