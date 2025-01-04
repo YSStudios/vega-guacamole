@@ -46,6 +46,8 @@ export default function Home({
   const buttonRef = useRef(null);
   const vegaButtonSoundRef = useRef(null);
   const animationSpeedRef = useRef(0.008);
+  const isInteractingRef = useRef(false);
+  const mousePositionRef = useRef({ x: 10000, y: 10000 });
 
   const handleFocus = (refName) => {
     if (
@@ -87,9 +89,67 @@ export default function Home({
     }
   }, [showButton]);
 
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      mousePositionRef.current = {
+        x: event.clientX,
+        y: event.clientY
+      };
+    };
+
+    const handleTouchStart = (event) => {
+      event.preventDefault(); // Prevent default touch behavior
+      isInteractingRef.current = true;
+      const touch = event.touches[0];
+      mousePositionRef.current = {
+        x: touch.clientX,
+        y: touch.clientY
+      };
+    };
+
+    const handleTouchEnd = (event) => {
+      event.preventDefault(); // Prevent default touch behavior
+      isInteractingRef.current = false;
+      // Move position far off screen
+      mousePositionRef.current = {
+        x: 10000,
+        y: 10000
+      };
+    };
+
+    const handleTouchMove = (event) => {
+      event.preventDefault(); // Prevent default touch behavior
+      if (isInteractingRef.current) {
+        const touch = event.touches[0];
+        mousePositionRef.current = {
+          x: touch.clientX,
+          y: touch.clientY
+        };
+      }
+    };
+
+    // Add event listeners
+    window.addEventListener('mousemove', handleMouseMove, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd, { passive: false });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, []);
+
   return (
     <App>
-      <Particle animationSpeedRef={animationSpeedRef} />
+      <Particle 
+        animationSpeedRef={animationSpeedRef} 
+        isInteractingRef={isInteractingRef}
+        mousePositionRef={mousePositionRef}
+      />
       <NoiseBackground />
       {showButton && (
         <IntroButton
