@@ -98,19 +98,18 @@ export default function Home({
     };
 
     const handleTouchStart = (event) => {
-      event.preventDefault(); // Prevent default touch behavior
-      isInteractingRef.current = true;
+      // Don't prevent default - let natural touch behavior occur
       const touch = event.touches[0];
       mousePositionRef.current = {
         x: touch.clientX,
         y: touch.clientY
       };
+      isInteractingRef.current = true;
     };
 
-    const handleTouchEnd = (event) => {
-      event.preventDefault(); // Prevent default touch behavior
+    const handleTouchEnd = () => {
+      // Don't prevent default - let natural touch behavior occur
       isInteractingRef.current = false;
-      // Move position far off screen
       mousePositionRef.current = {
         x: 10000,
         y: 10000
@@ -118,7 +117,7 @@ export default function Home({
     };
 
     const handleTouchMove = (event) => {
-      event.preventDefault(); // Prevent default touch behavior
+      // Don't prevent default - let natural touch behavior occur
       if (isInteractingRef.current) {
         const touch = event.touches[0];
         mousePositionRef.current = {
@@ -128,13 +127,11 @@ export default function Home({
       }
     };
 
-    // Add event listeners
-    window.addEventListener('mousemove', handleMouseMove, { passive: false });
-    window.addEventListener('touchstart', handleTouchStart, { passive: false });
-    window.addEventListener('touchend', handleTouchEnd, { passive: false });
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchmove', handleTouchMove);
 
-    // Cleanup
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchstart', handleTouchStart);
