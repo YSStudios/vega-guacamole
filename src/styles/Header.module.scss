@@ -50,6 +50,10 @@
 	position: absolute;
 	height: 5em;
 	backdrop-filter: blur(3px);
+
+	@media (max-width: 768px) {
+		backdrop-filter: none;
+	
 }
 
 .deco_left {
