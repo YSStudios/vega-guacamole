@@ -85,6 +85,7 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 	h3 {
 		font-size: 1.75rem;
 		font-family: var(--bodyFont3);
+		line-height: 1;
 
 		@media (max-width: 768px) {
 			font-size: 1.25em;

@@ -4,12 +4,15 @@ import { Provider } from "react-redux";
 import localFont from "@next/font/local";
 import { ThemeProvider } from "next-themes";
 import Head from "next/head";
+import { Anonymous_Pro } from "@next/font/google";
 
-const bodyFont = localFont({
-  src: "../../public/fonts/OCRAStd.otf",
-  variable: "--bodyFont",
+const bodyFont = Anonymous_Pro({
+  subsets: ['latin'],
+  variable: '--bodyFont',
+  weight: ['400', '700']
 });
 
+//remove this
 const bodyFont2 = localFont({
   src: "../../public/fonts/HelveticaNeueThin.otf",
   variable: "--bodyFont2",
