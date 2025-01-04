@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useCallback } from "react";
 import styles from "../styles/Header.module.scss";
 import TimeWeather from "../components/TimeWeather";
 import { useSelector, useDispatch } from "react-redux";
@@ -10,20 +10,20 @@ const Header = ({ weatherData }) => {
     return state.active ? state.active.loaderActive : null;
   });
 
-  useEffect(() => {}, [loaderActive]);
-
   const handleLogoClick = useCallback(
     (e) => {
       e.preventDefault();
       try {
         dispatch(toggleLoaderActive());
-      } catch (error) {}
+      } catch (error) {
+        console.error('Error toggling loader:', error);
+      }
     },
-    [dispatch, loaderActive]
+    [dispatch]
   );
 
   if (loaderActive === null) {
-    return null; // or some fallback UI
+    return null;
   }
 
   return (
