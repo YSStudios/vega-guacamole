@@ -32,8 +32,6 @@ export default function AboutModal({
 	const [currentImage, setCurrentImage] = useState(null);
 	const [activeSlide, setActiveSlide] = useState(0);
 
-	// console.log("aboutState:", aboutState);
-
 	useEffect(() => {
 		if (aboutState.length > 0 && aboutState[0].imagesGallery2) {
 			setCurrentImage(aboutState[0].imagesGallery2[0]);
@@ -59,7 +57,6 @@ export default function AboutModal({
 					{aboutState.slice(0, 1).map((about, index) => (
 						<div key={index}>
 							<div className={styles.about_logo}>
-								{console.log("aboutState[0]:", aboutState[0])}
 								{(aboutState[0]?.logoMovUrl || aboutState[0]?.logoWebMUrl) && (
 									<video
 										autoPlay

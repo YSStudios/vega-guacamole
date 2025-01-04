@@ -72,7 +72,7 @@ const MapComponent = ({ animationSpeedRef }) => {
     }, 1500);
 
     if (!particlesCreated) {
-      console.log("Initializing particles with color:", particleColor);
+      
       init(particleColor);
       setParticlesCreated(true);
     }
@@ -84,9 +84,6 @@ const MapComponent = ({ animationSpeedRef }) => {
     if (particlesCreated) return;
 
     const initializeParticles = () => {
-      console.log("Current theme state:", theme);
-      console.log("Initializing particles with color:", particleColor);
-
       init(particleColor);
       setParticlesCreated(true);
     };
@@ -98,8 +95,6 @@ const MapComponent = ({ animationSpeedRef }) => {
 
   useEffect(() => {
     if (!particlesCreated) return;
-
-    console.log("Color transition to:", particleColor);
     if (particlesRef.current && rendererRef.current) {
       startColorTransition(particleColor);
     }
@@ -107,7 +102,6 @@ const MapComponent = ({ animationSpeedRef }) => {
 
   useEffect(() => {
     if (!loaderActive && particlesInitialized && !spinCompleteRef.current) {
-      console.log("Triggering camera spin");
       spinCamera();
     }
   }, [loaderActive, particlesInitialized]);
@@ -122,13 +116,6 @@ const MapComponent = ({ animationSpeedRef }) => {
     if (!cameraRef.current) return;
 
     const camera = cameraRef.current;
-    console.log("Camera before animation:", {
-      x: camera.position.x,
-      y: camera.position.y,
-      z: camera.position.z,
-      fov: camera.fov,
-    });
-
     if (stage === "initial") {
       gsap.set(camera.position, { x: 0, y: 0, z: 50 });
       gsap.to(camera.position, {
@@ -150,7 +137,6 @@ const MapComponent = ({ animationSpeedRef }) => {
       !particlesRef.current.material ||
       !rendererRef.current
     ) {
-      console.error("Required objects not initialized");
       return;
     }
 
@@ -220,15 +206,11 @@ const MapComponent = ({ animationSpeedRef }) => {
 
   const drawTheMap = (currentParticleColor, imagedata) => {
     if (!imagedata) {
-      console.warn("Image data is not yet available.");
       return;
     }
     if (particlesRef.current) {
       return;
     }
-
-    console.log("Drawing map with color:", currentParticleColor);
-
     const circleTexture = (() => {
       const canvas = document.createElement("canvas");
       const size = 256;
@@ -327,8 +309,6 @@ const MapComponent = ({ animationSpeedRef }) => {
   };
 
   const init = (color) => {
-    console.log("Init called with color:", color);
-    console.log("Initializing scene with color:", color);
     rendererRef.current = new THREE.WebGLRenderer({
       antialias: true,
       canvas: rendererRef.current,

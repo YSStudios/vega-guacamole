@@ -10,6 +10,15 @@
 	height: 80px;
 	background-color: #C4C5C633;
 	justify-content: space-between;
+	transition: opacity 0.3s ease;
+
+	&.fadeIn {
+		opacity: 1;
+	}
+
+	&.fadeOut {
+		opacity: 0;
+	}
 
 	&:before {
 		background-image: url(../assets/svg/header-left-slice-light.svg);
