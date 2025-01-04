@@ -40,8 +40,17 @@ const MapComponent = ({ animationSpeedRef }) => {
   const touchFadeOutRef = useRef(null);
   const touchInteractionStrengthRef = useRef(0);
 
+  const deviceTypeRef = useRef(null);
+  const lastFrameTimeRef = useRef(null);
+  const fadeAnimationRef = useRef(null);
+
   let ww = typeof window !== "undefined" ? window.innerWidth : 800;
   let wh = typeof window !== "undefined" ? window.innerHeight : 600;
+
+  useEffect(() => {
+    deviceTypeRef.current = window.matchMedia("(pointer: coarse)").matches;
+    lastFrameTimeRef.current = Date.now();
+  }, []);
 
   useEffect(() => {
     setIsLoading(true);
@@ -429,15 +438,41 @@ const MapComponent = ({ animationSpeedRef }) => {
       .add(dir.multiplyScalar(distance));
   };
 
+  const handleTouchFadeOut = () => {
+    const animate = () => {
+      const currentTime = Date.now();
+      const deltaTime = (currentTime - lastFrameTimeRef.current) / 16; // Normalize to 60fps
+      lastFrameTimeRef.current = currentTime;
+
+      touchInteractionStrengthRef.current -= 0.05 * deltaTime;
+
+      if (touchInteractionStrengthRef.current <= 0) {
+        touchInteractionStrengthRef.current = 0;
+        touchInteractionRef.current = false;
+        fadeAnimationRef.current = null;
+        return;
+      }
+
+      fadeAnimationRef.current = requestAnimationFrame(animate);
+    };
+
+    if (fadeAnimationRef.current) {
+      cancelAnimationFrame(fadeAnimationRef.current);
+    }
+    fadeAnimationRef.current = requestAnimationFrame(animate);
+  };
+
   const handleTouchStart = (event) => {
     if (event.target === rendererRef.current?.domElement) {
-      // Only prevent default on the canvas
       event.preventDefault();
       touchInteractionRef.current = true;
-      if (touchFadeOutRef.current) {
-        clearInterval(touchFadeOutRef.current);
+      
+      if (fadeAnimationRef.current) {
+        cancelAnimationFrame(fadeAnimationRef.current);
       }
+      
       touchInteractionStrengthRef.current = 1;
+      lastFrameTimeRef.current = Date.now();
       
       const touch = event.touches[0];
       mouseRef.current.x = (touch.clientX / window.innerWidth) * 2 - 1;
@@ -447,135 +482,121 @@ const MapComponent = ({ animationSpeedRef }) => {
   };
 
   const handleTouchEnd = () => {
-    // Reset mouse position to be far away when touch ends
     mouseRef.current.x = 10000;
     mouseRef.current.y = 10000;
     updateWorldPosition();
-    
-    // Start fade out animation
-    touchFadeOutRef.current = setInterval(() => {
-      touchInteractionStrengthRef.current -= 0.05;
-      if (touchInteractionStrengthRef.current <= 0) {
-        touchInteractionStrengthRef.current = 0;
-        touchInteractionRef.current = false;
-        clearInterval(touchFadeOutRef.current);
-      }
-    }, 16);
+    handleTouchFadeOut();
   };
 
   const render = (a) => {
     requestAnimationFrame(render);
 
-    if (rendererRef.current) {
-      rendererRef.current.clear();
-    }
+    if (!rendererRef.current) return;
+    rendererRef.current.clear();
 
     if (
-      particlesRef.current &&
-      particlesRef.current.geometry.attributes.position &&
-      particlesRef.current.geometry.attributes.destination
-    ) {
-      const positions = particlesRef.current.geometry.attributes.position.array;
-      const destinations =
-        particlesRef.current.geometry.attributes.destination.array;
-      const time = Date.now() * 0.0005;
+      !particlesRef.current?.geometry?.attributes?.position ||
+      !particlesRef.current?.geometry?.attributes?.destination
+    ) return;
 
-      raycasterRef.current.setFromCamera(mouseRef.current, cameraRef.current);
-      const intersects = raycasterRef.current.intersectObject(
-        particlesRef.current
+    const positions = particlesRef.current.geometry.attributes.position.array;
+    const destinations = particlesRef.current.geometry.attributes.destination.array;
+    const time = Date.now() * 0.0005;
+
+    // Cache frequently accessed values
+    const worldPosition = mouseRef.current.worldPosition;
+    const isTouchDevice = deviceTypeRef.current;
+    const touchStrength = touchInteractionStrengthRef.current;
+
+    // Batch geometry updates
+    let needsUpdate = false;
+
+    for (let i = 0, j = positions.length; i < j; i += 3) {
+      // Movement towards destination
+      const dx = destinations[i] - positions[i];
+      const dy = destinations[i + 1] - positions[i + 1];
+      const dz = destinations[i + 2] - positions[i + 2];
+
+      positions[i] += dx * animationSpeedRef.current;
+      positions[i + 1] += dy * animationSpeedRef.current;
+      positions[i + 2] += dz * animationSpeedRef.current;
+
+      // Optimize distance calculations
+      const particlePosition = new THREE.Vector3(
+        positions[i],
+        positions[i + 1],
+        positions[i + 2]
       );
 
-      const mousePosition = new THREE.Vector3(
-        mouseRef.current.x * 200,
-        mouseRef.current.y * 200,
-        0
-      );
+      const distance = particlePosition.distanceTo(worldPosition);
+      const repulsionRadius = 150;
 
-      for (let i = 0, j = positions.length; i < j; i += 3) {
-        const dx = destinations[i] - positions[i];
-        const dy = destinations[i + 1] - positions[i + 1];
-        const dz = destinations[i + 2] - positions[i + 2];
-
-        positions[i] += dx * animationSpeedRef.current;
-        positions[i + 1] += dy * animationSpeedRef.current;
-        positions[i + 2] += dz * animationSpeedRef.current;
-
-        const distanceFromCenter = Math.sqrt(
-          destinations[i] * destinations[i] +
-            destinations[i + 1] * destinations[i + 1]
-        );
-        const amplitude = Math.max(0.2, 1 - distanceFromCenter / 100);
-
-        const particlePosition = new THREE.Vector3(
-          positions[i],
-          positions[i + 1],
-          positions[i + 2]
-        );
-
-        // Use world position for distance calculation
-        const distance = particlePosition.distanceTo(
-          mouseRef.current.worldPosition
-        );
-        const repulsionRadius = 150;
-
-        if (distance < repulsionRadius) {
-          // Only apply repulsion if not on touch device or touch interaction is active
-          const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
-          const shouldApplyRepulsion = !isTouchDevice || touchInteractionRef.current;
+      if (distance < repulsionRadius) {
+        const shouldApplyRepulsion = !isTouchDevice || touchInteractionRef.current;
+        
+        if (shouldApplyRepulsion) {
+          const strength = isTouchDevice ? touchStrength : 1;
+          const repulsionForce = (1 - distance / repulsionRadius) * 8 * strength;
           
-          if (shouldApplyRepulsion) {
-            const strength = isTouchDevice ? touchInteractionStrengthRef.current : 1;
-            const repulsionForce = (1 - distance / repulsionRadius) * 8 * strength;
-            
-            const angle = Math.atan2(
-              particlePosition.y - mouseRef.current.worldPosition.y,
-              particlePosition.x - mouseRef.current.worldPosition.x
-            );
+          const angle = Math.atan2(
+            particlePosition.y - worldPosition.y,
+            particlePosition.x - worldPosition.x
+          );
 
-            const wave = Math.sin(distance * 0.05 + time * 2) * 0.5 + 0.5;
-            const waveForce = repulsionForce * wave;
+          // Combine all movement calculations
+          const wave = Math.sin(distance * 0.05 + time * 2) * 0.5 + 0.5;
+          const waveForce = repulsionForce * wave;
+          const spiralAngle = distance * 0.01 + time;
+          
+          const totalX = Math.cos(angle) * repulsionForce * 2 + 
+                        Math.cos(spiralAngle) * waveForce * 2 +
+                        Math.sin(time * 10 + distance) * 0.2;
+          
+          const totalY = Math.sin(angle) * repulsionForce * 2 +
+                        Math.sin(spiralAngle) * waveForce * 2 +
+                        Math.sin(time * 10 + distance) * 0.2;
+          
+          const totalZ = Math.sin(time * 2) * waveForce * 2 +
+                        Math.sin(time * 10 + distance) * 0.2;
 
-            const spiralAngle = distance * 0.01 + time;
-            const spiralX = Math.cos(spiralAngle) * waveForce * 2;
-            const spiralY = Math.sin(spiralAngle) * waveForce * 2;
-
-            positions[i] += Math.cos(angle) * repulsionForce * 2 + spiralX;
-            positions[i + 1] += Math.sin(angle) * repulsionForce * 2 + spiralY;
-            positions[i + 2] += Math.sin(time * 2) * waveForce * 2;
-
-            const jitter = Math.sin(time * 10 + distance) * 0.2;
-            positions[i] += jitter;
-            positions[i + 1] += jitter;
-            positions[i + 2] += jitter;
-          }
+          positions[i] += totalX;
+          positions[i + 1] += totalY;
+          positions[i + 2] += totalZ;
+          
+          needsUpdate = true;
         }
-
-        positions[i] +=
-          Math.sin(time + destinations[i] * 0.01) * amplitude * 0.3;
-        positions[i + 1] +=
-          Math.cos(time + destinations[i + 1] * 0.01) * amplitude * 0.3;
-        positions[i + 2] +=
-          Math.sin(time * 1.5 + destinations[i + 2] * 0.01) * amplitude * 0.2;
-
-        positions[i] += (Math.random() - 0.5) * 0.05;
-        positions[i + 1] += (Math.random() - 0.5) * 0.05;
-        positions[i + 2] += (Math.random() - 0.5) * 0.05;
       }
 
+      // Ambient movement
+      const distanceFromCenter = Math.sqrt(
+        destinations[i] * destinations[i] +
+        destinations[i + 1] * destinations[i + 1]
+      );
+      const amplitude = Math.max(0.2, 1 - distanceFromCenter / 100);
+
+      positions[i] += Math.sin(time + destinations[i] * 0.01) * amplitude * 0.3;
+      positions[i + 1] += Math.cos(time + destinations[i + 1] * 0.01) * amplitude * 0.3;
+      positions[i + 2] += Math.sin(time * 1.5 + destinations[i + 2] * 0.01) * amplitude * 0.2;
+
+      // Random jitter
+      const jitter = (Math.random() - 0.5) * 0.05;
+      positions[i] += jitter;
+      positions[i + 1] += jitter;
+      positions[i + 2] += jitter;
+      
+      needsUpdate = true;
+    }
+
+    if (needsUpdate) {
       particlesRef.current.geometry.attributes.position.needsUpdate = true;
     }
 
+    // Camera animation
     if (cameraRef.current && !isSpinningRef.current) {
       const time = Date.now() * 0.0002;
-      const initialZ = 400;
-      const zAmplitude = 50;
-      const xAmplitude = 100;
-      const fovAmplitude = 10;
-      const initialFOV = 110;
-
-      cameraRef.current.position.z = initialZ + Math.sin(time) * zAmplitude;
-      cameraRef.current.position.x = Math.sin(time * 0.5) * xAmplitude;
-      cameraRef.current.fov = initialFOV + Math.sin(time * 0.5) * fovAmplitude;
+      cameraRef.current.position.z = 400 + Math.sin(time) * 50;
+      cameraRef.current.position.x = Math.sin(time * 0.5) * 100;
+      cameraRef.current.fov = 110 + Math.sin(time * 0.5) * 10;
       cameraRef.current.lookAt(
         Math.sin(time * 0.2) * 10,
         Math.cos(time * 0.2) * 10,
@@ -584,9 +605,7 @@ const MapComponent = ({ animationSpeedRef }) => {
       cameraRef.current.updateProjectionMatrix();
     }
 
-    if (composerRef.current) {
-      composerRef.current.render();
-    }
+    composerRef.current?.render();
   };
 
   const cleanup = () => {
@@ -639,8 +658,8 @@ const MapComponent = ({ animationSpeedRef }) => {
         canvas.removeEventListener("touchend", handleTouchEnd);
       }
       window.removeEventListener("resize", handleResize);
-      if (touchFadeOutRef.current) {
-        clearInterval(touchFadeOutRef.current);
+      if (fadeAnimationRef.current) {
+        cancelAnimationFrame(fadeAnimationRef.current);
       }
       cleanup();
     };
