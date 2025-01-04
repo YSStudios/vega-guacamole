@@ -79,6 +79,10 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 		h2 {
 			font-size: 24px;
 		}
+		span {
+			font-family: var(--bodyFont);
+			font-size: 0.65em;
+		}
 		
 	}
 
@@ -440,6 +444,7 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 		grid-area: header;
 		font-weight: bold;
 		margin: 0;
+		margin-bottom: .5em;
 	}
 
 	.agency {
@@ -603,6 +608,7 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 	backdrop-filter: blur(10px);
 	color: white;
 	line-height: 1;
+	max-width: 15em;
 	span {
 		font-family: var(--headingFont2);
 		line-height: 1.3;
