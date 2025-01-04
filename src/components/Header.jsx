@@ -4,7 +4,7 @@ import TimeWeather from "../components/TimeWeather";
 import { useSelector, useDispatch } from "react-redux";
 import { toggleLoaderActive } from "../slices/modalSlice";
 
-const Header = ({ weatherData }) => {
+const Header = ({ weatherData, className }) => {
   const dispatch = useDispatch();
   const loaderActive = useSelector((state) => {
     return state.active ? state.active.loaderActive : null;
@@ -28,7 +28,7 @@ const Header = ({ weatherData }) => {
 
   return (
     <header
-      className={`${styles.header} ${
+      className={`${styles.header} ${className} ${
         !loaderActive ? styles.fadeIn : styles.fadeOut
       }`}
     >

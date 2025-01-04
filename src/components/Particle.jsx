@@ -39,6 +39,7 @@ const MapComponent = ({ animationSpeedRef }) => {
   const touchInteractionRef = useRef(false);
   const touchFadeOutRef = useRef(null);
   const touchInteractionStrengthRef = useRef(0);
+  const hasInteractedRef = useRef(false);
 
   let ww = typeof window !== "undefined" ? window.innerWidth : 800;
   let wh = typeof window !== "undefined" ? window.innerHeight : 600;
@@ -395,11 +396,10 @@ const MapComponent = ({ animationSpeedRef }) => {
 
   const handleMouseMove = (event) => {
     if (window.matchMedia("(pointer: coarse)").matches) {
-      // Skip mouse handling on touch devices
       return;
     }
     
-    // Convert mouse coordinates to normalized device coordinates (-1 to +1)
+    hasInteractedRef.current = true;
     mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
     updateWorldPosition();
@@ -431,8 +431,8 @@ const MapComponent = ({ animationSpeedRef }) => {
 
   const handleTouchStart = (event) => {
     if (event.target === rendererRef.current?.domElement) {
-      // Only prevent default on the canvas
       event.preventDefault();
+      hasInteractedRef.current = true;
       touchInteractionRef.current = true;
       if (touchFadeOutRef.current) {
         clearInterval(touchFadeOutRef.current);
@@ -518,7 +518,7 @@ const MapComponent = ({ animationSpeedRef }) => {
         );
         const repulsionRadius = 150;
 
-        if (distance < repulsionRadius) {
+        if (distance < repulsionRadius && hasInteractedRef.current) {
           // Only apply repulsion if not on touch device or touch interaction is active
           const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
           const shouldApplyRepulsion = !isTouchDevice || touchInteractionRef.current;
