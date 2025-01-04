@@ -180,7 +180,8 @@ export async function getServerSideProps(context) {
     client.fetch('*[_type == "vegaTv"][0]'),
     client.fetch(`*[_type == "about"]{
       header,
-      "logoUrl": logo.asset->url,
+      "logoWebMUrl": logoWebm.asset->url,
+      "logoMovUrl": logoMov.asset->url,
       imagesGallery,
       body,
       imagesGallery2[] {

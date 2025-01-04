@@ -59,17 +59,31 @@ export default function AboutModal({
 					{aboutState.slice(0, 1).map((about, index) => (
 						<div key={index}>
 							<div className={styles.about_logo}>
-								{about.logoUrl && (
+								{console.log("aboutState[0]:", aboutState[0])}
+								{(aboutState[0]?.logoMovUrl || aboutState[0]?.logoWebMUrl) && (
 									<video
 										autoPlay
 										loop
 										muted
 										playsInline
+										style={{ 
+											width: /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ? '15em' : '8em',
+											height: '7em',
+											objectFit: 'cover'
+										}}
 									>
-										<source
-											src={about.logoUrl}
-											type="video/webm"
-										/>
+										{aboutState[0]?.logoMovUrl && (
+											<source
+												src={aboutState[0].logoMovUrl}
+												type="video/quicktime"
+											/>
+										)}
+										{aboutState[0]?.logoWebMUrl && (
+											<source
+													src={aboutState[0].logoWebMUrl}
+													type="video/webm"
+												/>
+										)}
 										Your browser does not support the video tag.
 									</video>
 								)}

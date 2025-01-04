@@ -59,7 +59,7 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 		}
 
 		@media (max-width: 768px) {
-			font-size: 2.5em;
+			font-size: 1.7em;
 		}
 	}
 
@@ -118,8 +118,6 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 	.about_logo {
 		text-align: center;
 		width: 100%;
-		padding-top: 1em;
-		margin-bottom: 1em;
 
 		img, video {
 			width: 8em;
@@ -221,6 +219,7 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 	opacity: 0;
 	order: 6;
 	font-size: 1rem;
+	overflow-x: hidden;
 
 	> div {
 		scroll-snap-align: center; //change to center after divs don't overflow vertically
@@ -352,12 +351,12 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 
 [data-theme="dark"] {
 	.list_content {
-		color: #cccccc;
+		color: #d1d1d1;
 	}
 
 	.about_subtext,
 	.est_date {
-		color: #b3b3b3;
+		color: #d1d1d1;
 	}
 }
 
@@ -554,7 +553,7 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 
 		.bar {
 			width: 5px;
-			background: linear-gradient(to bottom, #000, #cccccc);
+			background: linear-gradient(to bottom, #000, #d1d1d1);
 			animation: barAnimation 3s infinite ease-in-out;
 		}
 
@@ -693,6 +692,10 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 				z-index: -1;
 				background-size: contain;
 				display: block;
+
+				[data-theme="dark"] & {
+					filter: brightness(0) invert(1);
+				}
 			}
 		}
 		
@@ -732,6 +735,10 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 
 		img {
 			min-height: 6em;
+
+			[data-theme="dark"] & {
+				filter: invert(1);
+			}
 		}
 	}
 
@@ -764,6 +771,10 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 			max-width: 25em;
 			margin: auto;
 			padding: 0 1em;
+
+			[data-theme="dark"] & {
+				filter: invert(1);
+			}
 		}
 	}
 }
