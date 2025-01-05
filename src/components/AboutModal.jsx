@@ -84,7 +84,7 @@ export default function AboutModal({
                     {aboutState[0]?.logoMovUrl && (
                       <source
                         src={aboutState[0].logoMovUrl}
-                        type="video/mp4"
+                        type="video/quicktime"
                       />
                     )}
                     Your browser does not support the video tag.
