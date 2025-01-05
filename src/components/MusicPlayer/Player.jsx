@@ -219,9 +219,13 @@ const Player = ({
           ) : (
             <div className={styles.track_info}>
               <span className={styles.artist_name}>{currentSong?.artist}</span>
-			  <Marquee pauseOnHover={true} speed={25} className={styles.track_container}>
-              	<span className={styles.track_name}>{currentSong?.name}</span>
-			  </Marquee>
+              <Marquee
+                pauseOnHover={true}
+                speed={25}
+                className={styles.track_container}
+              >
+                <span className={styles.track_name}>{currentSong?.name}</span>
+              </Marquee>
             </div>
           )}
         </div>
@@ -316,6 +320,7 @@ const Player = ({
             setCurrentSong={setCurrentSong}
             audioRef={audioRef}
             isPlaying={isPlaying}
+            setIsPlaying={setIsPlaying}
             setSongs={setSongs}
             songData={songData}
             urlFor={urlFor}

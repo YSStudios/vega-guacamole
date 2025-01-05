@@ -93,7 +93,7 @@ export default function Home({
     const handleMouseMove = (event) => {
       mousePositionRef.current = {
         x: event.clientX,
-        y: event.clientY
+        y: event.clientY,
       };
     };
 
@@ -102,7 +102,7 @@ export default function Home({
       const touch = event.touches[0];
       mousePositionRef.current = {
         x: touch.clientX,
-        y: touch.clientY
+        y: touch.clientY,
       };
       isInteractingRef.current = true;
     };
@@ -112,7 +112,7 @@ export default function Home({
       isInteractingRef.current = false;
       mousePositionRef.current = {
         x: 10000,
-        y: 10000
+        y: 10000,
       };
     };
 
@@ -122,28 +122,28 @@ export default function Home({
         const touch = event.touches[0];
         mousePositionRef.current = {
           x: touch.clientX,
-          y: touch.clientY
+          y: touch.clientY,
         };
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchend', handleTouchEnd);
-    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchend", handleTouchEnd);
+    window.addEventListener("touchmove", handleTouchMove);
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchmove", handleTouchMove);
     };
   }, []);
 
   return (
     <App>
-      <Particle 
-        animationSpeedRef={animationSpeedRef} 
+      <Particle
+        animationSpeedRef={animationSpeedRef}
         isInteractingRef={isInteractingRef}
         mousePositionRef={mousePositionRef}
       />
@@ -196,9 +196,6 @@ export default function Home({
 
 export async function getServerSideProps(context) {
   try {
-    // Log to verify the environment variable is available
-    console.log("Weather API Key available:", !!process.env.WEATHER_KEY);
-
     // Fetch all data in parallel
     const [weatherResponse, caseStudies, vegaTvData, about, trans, songData] =
       await Promise.all([
