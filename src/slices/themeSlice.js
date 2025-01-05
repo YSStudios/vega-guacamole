@@ -2,14 +2,19 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const getInitialParticleColor = () => {
   // If we're in the browser, check localStorage or any other source for saved theme
-  if (typeof window !== 'undefined') {
-    const savedTheme = localStorage.getItem('theme');
-    switch(savedTheme) {
-      case 'light': return "#FF0000";
-      case 'guava': return "#00FF00";
-      case 'inferno': return "#0000FF";
-      case 'dark': return "#FFFF00";
-      default: return "#FF0000"; // Default to theme1 color
+  if (typeof window !== "undefined") {
+    const savedTheme = localStorage.getItem("theme");
+    switch (savedTheme) {
+      case "light":
+        return "#0000CC";
+      case "guava":
+        return "#00FF00";
+      case "inferno":
+        return "#ffffff";
+      case "dark":
+        return "#FFFF00";
+      default:
+        return "#FF0000"; // Default to theme1 color
     }
   }
   return "#FF0000"; // Default for SSR
@@ -32,7 +37,7 @@ export const themeSlice = createSlice({
         themeActive2: false,
         themeActive3: false,
         themeActive4: false,
-        particleColor: "#FF0000",
+        particleColor: "#0000CC",
       };
     },
     themeActive2: (state) => {
@@ -52,7 +57,7 @@ export const themeSlice = createSlice({
         themeActive2: false,
         themeActive3: true,
         themeActive4: false,
-        particleColor: "#0000FF",
+        particleColor: "#FFFFFF",
       };
     },
     themeActive4: (state) => {

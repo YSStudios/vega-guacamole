@@ -36,6 +36,7 @@ const MapComponent = ({ animationSpeedRef }) => {
     worldPosition: new THREE.Vector3(10000, 10000, 0),
   });
   const raycasterRef = useRef(new THREE.Raycaster());
+  const backgroundParticlesRef = useRef(null);
 
   let ww = typeof window !== "undefined" ? window.innerWidth : 800;
   let wh = typeof window !== "undefined" ? window.innerHeight : 600;
@@ -98,6 +99,9 @@ const MapComponent = ({ animationSpeedRef }) => {
     console.log("Color transition to:", particleColor);
     if (particlesRef.current && rendererRef.current) {
       startColorTransition(particleColor);
+      if (backgroundParticlesRef.current) {
+        startBackgroundColorTransition(particleColor);
+      }
     }
   }, [particleColor, particlesCreated]);
 
@@ -179,17 +183,60 @@ const MapComponent = ({ animationSpeedRef }) => {
     colorTransitionRef.current = requestAnimationFrame(animateColors);
   };
 
+  const startBackgroundColorTransition = (targetParticleColor) => {
+    if (
+      !backgroundParticlesRef.current ||
+      !backgroundParticlesRef.current.material
+    ) {
+      return;
+    }
+
+    const startParticleColor =
+      backgroundParticlesRef.current.material.color.clone();
+    const targetParticleColorObj = new THREE.Color(targetParticleColor);
+
+    let startTime;
+    const duration = 30000; // Match the main particles transition duration
+
+    const animateColors = (currentTime) => {
+      if (!startTime) startTime = currentTime;
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      const currentParticleColor = startParticleColor.lerp(
+        targetParticleColorObj,
+        progress
+      );
+
+      if (
+        backgroundParticlesRef.current &&
+        backgroundParticlesRef.current.material
+      ) {
+        backgroundParticlesRef.current.material.color.copy(
+          currentParticleColor
+        );
+        backgroundParticlesRef.current.material.needsUpdate = true;
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(animateColors);
+      }
+    };
+
+    requestAnimationFrame(animateColors);
+  };
+
   const settings = {
     particleColor,
     camera: {
-      fov: 120,
+      fov: 75,
       near: 0.1,
-      far: 2000,
+      far: 20000,
       initialPosition: { x: 0, y: 0, z: 400 },
-      lookAt: { x: 0, y: 0, z: -100 },
+      lookAt: { x: 0, y: 0, z: 0 },
     },
     bloomPass: {
-      threshold: 0.05,
+      threshold: 0.1,
       strength: 0.4,
       radius: 0.2,
     },
@@ -272,15 +319,15 @@ const MapComponent = ({ animationSpeedRef }) => {
     const geometry = new THREE.BufferGeometry();
 
     const material = new THREE.PointsMaterial({
-      size: 6.5,
+      size: 4.5,
       color: new THREE.Color(currentParticleColor),
       map: circleTexture,
       transparent: true,
-      opacity: 0.85,
+      opacity: 1,
       sizeAttenuation: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
-      alphaTest: 0.02,
+      alphaTest: 0.05,
     });
 
     const vertices = [];
@@ -413,14 +460,69 @@ const MapComponent = ({ animationSpeedRef }) => {
         console.error("Error loading texture:", error);
       }
     );
+
+    createBackgroundParticles();
+  };
+
+  const createBackgroundParticles = () => {
+    const particleCount = 4000;
+    const geometry = new THREE.BufferGeometry();
+    const vertices = [];
+    const destinations = [];
+
+    const getRandomPosition = () => {
+      if (Math.random() > 0.5) {
+        return {
+          x: (Math.random() - 0.5) * 16000,
+          y: (Math.random() - 0.5) * 16000,
+          z: (Math.random() - 0.5) * 8000 - 2000,
+        };
+      } else {
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        const r = 12000 + Math.random() * 4000;
+        return {
+          x: r * Math.sin(phi) * Math.cos(theta),
+          y: r * Math.sin(phi) * Math.sin(theta),
+          z: r * Math.cos(phi),
+        };
+      }
+    };
+
+    for (let i = 0; i < particleCount; i++) {
+      const startPos = getRandomPosition();
+      vertices.push(startPos.x, startPos.y, startPos.z);
+
+      const destPos = getRandomPosition();
+      destinations.push(destPos.x, destPos.y, destPos.z);
+    }
+
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(vertices, 3)
+    );
+    geometry.setAttribute(
+      "destination",
+      new THREE.Float32BufferAttribute(destinations, 3)
+    );
+
+    const material = new THREE.PointsMaterial({
+      size: 5.0,
+      color: new THREE.Color(particleColor),
+      transparent: true,
+      opacity: 0.15,
+      sizeAttenuation: true,
+      blending: THREE.AdditiveBlending,
+    });
+
+    backgroundParticlesRef.current = new THREE.Points(geometry, material);
+    sceneRef.current.add(backgroundParticlesRef.current);
   };
 
   const handleMouseMove = (event) => {
-    // Convert mouse coordinates to normalized device coordinates (-1 to +1)
     mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    // Convert mouse position to world coordinates
     const vector = new THREE.Vector3(mouseRef.current.x, mouseRef.current.y, 0);
     vector.unproject(cameraRef.current);
     const dir = vector.sub(cameraRef.current.position).normalize();
@@ -453,7 +555,6 @@ const MapComponent = ({ animationSpeedRef }) => {
   };
 
   const handleTouchEnd = () => {
-    // Reset the world position to a far-off position after touch ends
     mouseRef.current.worldPosition.set(10000, 10000, 0);
   };
 
@@ -507,7 +608,6 @@ const MapComponent = ({ animationSpeedRef }) => {
           positions[i + 2]
         );
 
-        // Use world position for distance calculation
         const distance = particlePosition.distanceTo(
           mouseRef.current.worldPosition
         );
@@ -574,6 +674,43 @@ const MapComponent = ({ animationSpeedRef }) => {
     if (composerRef.current) {
       composerRef.current.render();
     }
+
+    if (backgroundParticlesRef.current) {
+      const time = Date.now() * 0.00005;
+      const positions =
+        backgroundParticlesRef.current.geometry.attributes.position.array;
+      const destinations =
+        backgroundParticlesRef.current.geometry.attributes.destination.array;
+
+      for (let i = 0; i < positions.length; i += 3) {
+        const dx = destinations[i] - positions[i];
+        const dy = destinations[i + 1] - positions[i + 1];
+        const dz = destinations[i + 2] - positions[i + 2];
+
+        positions[i] += dx * animationSpeedRef.current * 0.2;
+        positions[i + 1] += dy * animationSpeedRef.current * 0.2;
+        positions[i + 2] += dz * animationSpeedRef.current * 0.2;
+
+        positions[i] += Math.sin(time + i * 0.1) * 2;
+        positions[i + 1] += Math.cos(time + i * 0.1) * 2;
+        positions[i + 2] += Math.sin(time * 0.5 + i * 0.1) * 2;
+
+        const distanceFromCenter = Math.sqrt(
+          positions[i] * positions[i] +
+            positions[i + 1] * positions[i + 1] +
+            positions[i + 2] * positions[i + 2]
+        );
+
+        if (distanceFromCenter > 20000) {
+          const newPos = getRandomPosition();
+          positions[i] = newPos.x;
+          positions[i + 1] = newPos.y;
+          positions[i + 2] = newPos.z;
+        }
+      }
+
+      backgroundParticlesRef.current.geometry.attributes.position.needsUpdate = true;
+    }
   };
 
   const cleanup = () => {
@@ -589,6 +726,11 @@ const MapComponent = ({ animationSpeedRef }) => {
     }
     if (colorTransitionRef.current) {
       cancelAnimationFrame(colorTransitionRef.current);
+    }
+    if (backgroundParticlesRef.current) {
+      sceneRef.current.remove(backgroundParticlesRef.current);
+      backgroundParticlesRef.current.geometry.dispose();
+      backgroundParticlesRef.current.material.dispose();
     }
   };
 
