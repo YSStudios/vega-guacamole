@@ -189,9 +189,9 @@ const MapComponent = ({ animationSpeedRef }) => {
       lookAt: { x: 0, y: 0, z: -100 },
     },
     bloomPass: {
-      threshold: 0.1,
-      strength: 1.2,
-      radius: 0.8,
+      threshold: 0.05,
+      strength: 0.4,
+      radius: 0.2,
     },
   };
 
@@ -227,7 +227,7 @@ const MapComponent = ({ animationSpeedRef }) => {
 
     const circleTexture = (() => {
       const canvas = document.createElement("canvas");
-      const size = 256;
+      const size = 64;
       canvas.width = size;
       canvas.height = size;
       const ctx = canvas.getContext("2d");
@@ -241,14 +241,28 @@ const MapComponent = ({ animationSpeedRef }) => {
         size / 2
       );
       gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-      gradient.addColorStop(0.2, "rgba(255, 255, 255, 0.8)");
-      gradient.addColorStop(0.5, "rgba(255, 255, 255, 0.3)");
-      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+      gradient.addColorStop(0.1, "rgba(255, 255, 255, 0.9)");
+      gradient.addColorStop(0.25, "rgba(255, 255, 255, 0.4)");
+      gradient.addColorStop(0.6, "rgba(255, 255, 255, 0)");
+
+      const imageData = ctx.createImageData(size, size);
+      const data = imageData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const noise = Math.random() * 0.15; // Noise intensity
+        data[i] = 255; // R
+        data[i + 1] = 255; // G
+        data[i + 2] = 255; // B
+        data[i + 3] = noise * 255; // Alpha channel with noise
+      }
 
       ctx.beginPath();
       ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
       ctx.fillStyle = gradient;
       ctx.fill();
+
+      // Apply noise
+      ctx.putImageData(imageData, 0, 0);
 
       const texture = new THREE.Texture(canvas);
       texture.needsUpdate = true;
@@ -258,14 +272,15 @@ const MapComponent = ({ animationSpeedRef }) => {
     const geometry = new THREE.BufferGeometry();
 
     const material = new THREE.PointsMaterial({
-      size: 5.0,
+      size: 6.5,
       color: new THREE.Color(currentParticleColor),
       map: circleTexture,
       transparent: true,
-      opacity: 1,
+      opacity: 0.85,
       sizeAttenuation: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
+      alphaTest: 0.02,
     });
 
     const vertices = [];
@@ -274,8 +289,8 @@ const MapComponent = ({ animationSpeedRef }) => {
     const dispersionRange = 4000;
     const depthRange = 200;
 
-    const yStep = 2;
-    const xStep = 6;
+    const yStep = 3;
+    const xStep = 8;
 
     for (let y = 0, y2 = imagedata.height; y < y2; y += yStep) {
       for (let x = 0, x2 = imagedata.width; x < x2; x += xStep) {
@@ -333,7 +348,9 @@ const MapComponent = ({ animationSpeedRef }) => {
     });
     rendererRef.current.setSize(ww, wh);
     rendererRef.current.setClearColor(0x000000, 0);
-    rendererRef.current.autoClear = false;
+    rendererRef.current.autoClear = true;
+    rendererRef.current.sortObjects = true;
+    rendererRef.current.clearDepth();
 
     sceneRef.current = new THREE.Scene();
 
@@ -374,6 +391,14 @@ const MapComponent = ({ animationSpeedRef }) => {
     const renderScene = new RenderPass(sceneRef.current, cameraRef.current);
     composerRef.current.addPass(renderScene);
 
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      settings.bloomPass.strength,
+      settings.bloomPass.radius,
+      settings.bloomPass.threshold
+    );
+    composerRef.current.addPass(bloomPass);
+
     const imageURL = themeImages[Object.keys(theme).find((key) => theme[key])];
 
     const textureLoader = new THREE.TextureLoader();
@@ -413,7 +438,11 @@ const MapComponent = ({ animationSpeedRef }) => {
       mouseRef.current.x = (touch.clientX / window.innerWidth) * 2 - 1;
       mouseRef.current.y = -(touch.clientY / window.innerHeight) * 2 + 1;
 
-      const vector = new THREE.Vector3(mouseRef.current.x, mouseRef.current.y, 0);
+      const vector = new THREE.Vector3(
+        mouseRef.current.x,
+        mouseRef.current.y,
+        0
+      );
       vector.unproject(cameraRef.current);
       const dir = vector.sub(cameraRef.current.position).normalize();
       const distance = -cameraRef.current.position.z / dir.z;
@@ -433,6 +462,7 @@ const MapComponent = ({ animationSpeedRef }) => {
 
     if (rendererRef.current) {
       rendererRef.current.clear();
+      rendererRef.current.clearDepth();
     }
 
     if (
@@ -574,14 +604,27 @@ const MapComponent = ({ animationSpeedRef }) => {
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
-    rendererRef.current?.domElement?.addEventListener("touchmove", handleTouchMove, { passive: false });
-    rendererRef.current?.domElement?.addEventListener("touchend", handleTouchEnd);
+    rendererRef.current?.domElement?.addEventListener(
+      "touchmove",
+      handleTouchMove,
+      { passive: false }
+    );
+    rendererRef.current?.domElement?.addEventListener(
+      "touchend",
+      handleTouchEnd
+    );
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
-      rendererRef.current?.domElement?.removeEventListener("touchmove", handleTouchMove);
-      rendererRef.current?.domElement?.removeEventListener("touchend", handleTouchEnd);
+      rendererRef.current?.domElement?.removeEventListener(
+        "touchmove",
+        handleTouchMove
+      );
+      rendererRef.current?.domElement?.removeEventListener(
+        "touchend",
+        handleTouchEnd
+      );
       window.removeEventListener("resize", handleResize);
       cleanup();
     };
@@ -668,7 +711,14 @@ const MapComponent = ({ animationSpeedRef }) => {
       <canvas
         className={styles.mainbg}
         ref={rendererRef}
-        style={{ opacity: 1 }}
+        style={{
+          opacity: 1,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          zIndex: 1,
+          mixBlendMode: "plus-lighter",
+        }}
       />
     </>
   );
