@@ -12,7 +12,7 @@
 		width: 3.5em;
 		border-top-left-radius: 0.3em;
 		border-top-right-radius: 0.3em;
-		backdrop-filter: blur(.5em);
+		backdrop-filter: blur(var(--backdrop-blur));
 		height: 2em;
 		width: 4em;
 		align-items: center;

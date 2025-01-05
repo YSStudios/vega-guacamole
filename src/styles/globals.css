@@ -1,4 +1,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap");
+
+html {
+  --backdrop-blur: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    --backdrop-blur: 5px;
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    --backdrop-blur: 5px;
+  }
+}
+
 html,
 body,
 main {
@@ -14,7 +31,6 @@ main {
 }
 
 body {
-
   overflow: hidden;
 }
 
