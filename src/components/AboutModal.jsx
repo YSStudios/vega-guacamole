@@ -62,6 +62,9 @@ export default function AboutModal({
                     loop
                     muted
                     playsInline
+                    preload="auto"
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
                     style={{
                       width: /^((?!chrome|android).)*safari/i.test(
                         navigator.userAgent
@@ -72,16 +75,16 @@ export default function AboutModal({
                       objectFit: "cover",
                     }}
                   >
-                    {aboutState[0]?.logoMovUrl && (
-                      <source
-                        src={aboutState[0].logoMovUrl}
-                        type="video/quicktime"
-                      />
-                    )}
                     {aboutState[0]?.logoWebMUrl && (
                       <source
                         src={aboutState[0].logoWebMUrl}
                         type="video/webm"
+                      />
+                    )}
+                    {aboutState[0]?.logoMovUrl && (
+                      <source
+                        src={aboutState[0].logoMovUrl}
+                        type="video/mp4"
                       />
                     )}
                     Your browser does not support the video tag.
