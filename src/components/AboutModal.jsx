@@ -56,16 +56,15 @@ export default function AboutModal({
           {aboutState.slice(0, 1).map((about, index) => (
             <div key={index}>
               <div className={styles.about_logo}>
-                {(aboutState[0]?.logoMovUrl || aboutState[0]?.logoWebMUrl) && (
-                  <video
-                    playsinline
-                    autoplay
-                    muted
-                    loop
-                  >
-                    <source src={aboutState[0].logoMovUrl} type="video/quicktime" />
-                  </video>
-                )}
+                <div className={styles.about_video}>
+                  <Image 
+                    src="https://res.cloudinary.com/dtps5ugbf/image/upload/v1736111388/vega-website-320_tdxqhz.gif"
+                    alt="Vega Animation"
+                    width={320}
+                    height={240}
+                    priority
+                  />
+                </div>
               </div>
             </div>
           ))}

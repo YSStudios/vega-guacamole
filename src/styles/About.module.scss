@@ -125,7 +125,9 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 		width: 100%;
 
 		img, video {
-			width: 8em;
+			width: 15em;
+			height: 6em;
+			object-fit: cover;
 		}
 	}
 
