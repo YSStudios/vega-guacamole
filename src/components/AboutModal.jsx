@@ -58,36 +58,12 @@ export default function AboutModal({
               <div className={styles.about_logo}>
                 {(aboutState[0]?.logoMovUrl || aboutState[0]?.logoWebMUrl) && (
                   <video
-                    autoPlay
-                    loop
+                    playsinline
+                    autoplay
                     muted
-                    playsInline
-                    preload="auto"
-                    webkit-playsinline="true"
-                    x5-playsinline="true"
-                    style={{
-                      width: /^((?!chrome|android).)*safari/i.test(
-                        navigator.userAgent
-                      )
-                        ? "15em"
-                        : "8em",
-                      height: "7em",
-                      objectFit: "cover",
-                    }}
+                    loop
                   >
-                    {aboutState[0]?.logoWebMUrl && (
-                      <source
-                        src={aboutState[0].logoWebMUrl}
-                        type="video/webm"
-                      />
-                    )}
-                    {aboutState[0]?.logoMovUrl && (
-                      <source
-                        src={aboutState[0].logoMovUrl}
-                        type="video/quicktime"
-                      />
-                    )}
-                    Your browser does not support the video tag.
+                    <source src={aboutState[0].logoMovUrl} type="video/quicktime" />
                   </video>
                 )}
               </div>
@@ -185,11 +161,9 @@ export default function AboutModal({
                         speed={500}
                         slidesToShow={1}
                         slidesToScroll={1}
-                        beforeChange={(oldIndex, newIndex) =>
-                          setActiveSlide(newIndex)
-                        }
-                        adaptiveHeight={true}
-                        variableWidth={false}
+                        beforeChange={(oldIndex, newIndex) => setActiveSlide(newIndex)}
+                        adaptiveHeight={false}
+                        lazyLoad="ondemand"
                         className={`${styles.team_slick_slider} team_slick_slider`}
                         customPaging={(i) => (
                           <div>
@@ -201,15 +175,19 @@ export default function AboutModal({
                           {
                             breakpoint: 991,
                             settings: {
-                              variableWidth: false, // Disabling variableWidth at and below 1024px might help
-                              adaptiveHeight: true,
+                              variableWidth: false,
+                              adaptiveHeight: false,
+                              swipeToSlide: true,
+                              touchThreshold: 10,
                             },
                           },
                           {
                             breakpoint: 768,
                             settings: {
-                              variableWidth: false, // Ensuring variableWidth is disabled for smaller devices
-                              adaptiveHeight: true,
+                              variableWidth: false,
+                              adaptiveHeight: false,
+                              swipeToSlide: true,
+                              touchThreshold: 10,
                             },
                           },
                         ]}
@@ -217,9 +195,10 @@ export default function AboutModal({
                         {about.imagesGallery2.map((item, itemIndex) => (
                           <div key={itemIndex} className={styles.team_member}>
                             <img
+                              loading="lazy"
                               src={urlFor(item.image)
-                                .width(800)
-                                .height(800)
+                                .width(600)
+                                .height(600)
                                 .fit("crop")
                                 .crop(
                                   item.image.hotspot ? "focalpoint" : "center"
