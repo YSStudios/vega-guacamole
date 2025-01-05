@@ -50,16 +50,28 @@
 		top: 50%;
 		transform: translate(-50%, -50%) !important;
 		transition: box-shadow .5s ease;
-		z-index: 10000 !important;
+		z-index: 10000;
+		overflow: auto;
+		-webkit-overflow-scrolling: touch;
 		box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 50em 10em;
 		background-color: rgb(175 175 175 / 30%);
 		resize: none;
+		
+		.modal_nav {
+			position: fixed;
+			z-index: 10001;
+		}
+		
+		.modal_content {
+			height: 100%;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+		}
 
 		[data-theme="dark"] & {
 			background-color: rgb(57 57 57 / 30%);
-		};
-	  }
-
+		}
+	}
 
 	@supports not (backdrop-filter: blur(1px)) {
 		background-color: rgb(124 124 124 / 85%);		
