@@ -279,6 +279,10 @@ const MapComponent = ({ animationSpeedRef }) => {
       canvas.height = size;
       const ctx = canvas.getContext("2d");
 
+      // Clear the canvas
+      ctx.clearRect(0, 0, size, size);
+
+      // Create a perfect circle with soft edges
       const gradient = ctx.createRadialGradient(
         size / 2,
         size / 2,
@@ -288,28 +292,13 @@ const MapComponent = ({ animationSpeedRef }) => {
         size / 2
       );
       gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-      gradient.addColorStop(0.1, "rgba(255, 255, 255, 0.9)");
-      gradient.addColorStop(0.25, "rgba(255, 255, 255, 0.4)");
-      gradient.addColorStop(0.6, "rgba(255, 255, 255, 0)");
-
-      const imageData = ctx.createImageData(size, size);
-      const data = imageData.data;
-
-      for (let i = 0; i < data.length; i += 4) {
-        const noise = Math.random() * 0.15; // Noise intensity
-        data[i] = 255; // R
-        data[i + 1] = 255; // G
-        data[i + 2] = 255; // B
-        data[i + 3] = noise * 255; // Alpha channel with noise
-      }
+      gradient.addColorStop(0.5, "rgba(255, 255, 255, 0.5)");
+      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
 
       ctx.beginPath();
       ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
       ctx.fillStyle = gradient;
       ctx.fill();
-
-      // Apply noise
-      ctx.putImageData(imageData, 0, 0);
 
       const texture = new THREE.Texture(canvas);
       texture.needsUpdate = true;
@@ -319,7 +308,7 @@ const MapComponent = ({ animationSpeedRef }) => {
     const geometry = new THREE.BufferGeometry();
 
     const material = new THREE.PointsMaterial({
-      size: 4.5,
+      size: 3.5, // Reduced size for clearer circles
       color: new THREE.Color(currentParticleColor),
       map: circleTexture,
       transparent: true,
@@ -327,7 +316,7 @@ const MapComponent = ({ animationSpeedRef }) => {
       sizeAttenuation: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
-      alphaTest: 0.05,
+      alphaTest: 0.01, // Reduced for smoother edges
     });
 
     const vertices = [];
