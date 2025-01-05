@@ -4,7 +4,6 @@ import styles from "../styles/Styles.module.scss";
 import { useDispatch } from "react-redux";
 import { Draggable } from "gsap";
 import ModalNav from "./ModalNav";
-import LazyLoad from "react-lazyload";
 
 // Assuming urlFor is already imported and configured in your project
 export default function CaseStudiesModal({
@@ -20,11 +19,25 @@ export default function CaseStudiesModal({
 	const dispatch = useDispatch();
 	const maximizeRef = useRef(null);
 	const audioRef = useRef(null);
+	const [windowWidth, setWindowWidth] = useState(0);
 
 	useEffect(() => {
 		// Load the audio file
 		audioRef.current = new Audio('https://res.cloudinary.com/dtps5ugbf/video/upload/v1722389162/Unrealsfx_-_Cyberpunk_-_UI_HUD_Notification_ovkwjh.wav');
 	}, []);  
+
+	useEffect(() => {
+		// Set initial width
+		setWindowWidth(window.innerWidth);
+
+		// Handle resize
+		const handleResize = () => {
+			setWindowWidth(window.innerWidth);
+		};
+
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
+	}, []);
 
 	const handleZIndex = (toggle, ref) => {
 		dispatch(toggle());
@@ -35,20 +48,30 @@ export default function CaseStudiesModal({
 		// Play the sound
 		if (audioRef.current) {
 			audioRef.current.volume = 0.5;
-		  	audioRef.current.play().catch(error => console.error("Error playing case study sound:", error));
+			audioRef.current.play().catch(error => console.error("Error playing case study sound:", error));
 		}
+		
+		// Reset all possible scroll positions immediately
+		window.scrollTo(0, 0);
+		document.body.scrollTop = 0;
+		document.documentElement.scrollTop = 0;
+		
+		// If modalRef exists, reset its scroll position
+		if (modalRef.current) {
+			modalRef.current.scrollTop = 0;
+		}
+		
 		openModal(study);
 	};
 
 	// Ensure image is sized to 230x305 while using the hotspot and crop
 	const getImageUrl = (study) => {
-		// Use a conditional to change dimensions based on screen size
-		const isMobile = window.innerWidth <= 480; // Adjust breakpoint as needed
-		const dimension = isMobile ? 230 : 230; // Use same width for 1:1 ratio on mobile
+		const isMobile = windowWidth <= 768;
+		const dimension = isMobile ? 230 : 230;
 		
 		return urlFor(study.image)
 			.width(dimension)
-			.height(isMobile ? dimension : 305) // Make height equal to width on mobile
+			.height(isMobile ? dimension : 305)
 			.fit('crop')
 			.auto('format')
 			.url();

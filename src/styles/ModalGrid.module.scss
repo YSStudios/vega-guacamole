@@ -175,7 +175,7 @@
 
 .player {
 	position: absolute;
-	width: 19.5em;
+	width: 19.4em;
 	height: auto;
 	overflow: visible;
 	display: flex;
@@ -186,7 +186,7 @@
     border-style: inset;
     border: none;
     border-radius: 2em;
-	backdrop-filter: blur(.5em);
+	backdrop-filter: blur(2.5em);
 
 	@media (max-width: 767px) {
 		width: 13em;
@@ -359,8 +359,8 @@
 
 	.case_studies_sub {
 		transform: translateX(0%);
-		width: 44em;
-		height: 28em;
+		width: 20em;
+		height: 32em;
 		top: 10em;
 		// right: 2em;
 		left: 8em;
@@ -428,11 +428,16 @@
 
 @media (max-width: 599px) {
 	.player {
-		top: initial;
-		bottom: 6em;
+		top: 1em;
 		transform: translateX(0%);
 		right: initial;
 		left: 1em;
+	}
+
+	.case_studies {
+		transform: translateX(0%);
+		left: 1em;
+		top: 10em;
 	}
 }
 

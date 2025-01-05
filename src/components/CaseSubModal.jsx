@@ -145,15 +145,32 @@ export default function CaseSubModal({
 	};
 
 	useEffect(() => {
-		if (modalContentRef.current) {
-			modalContentRef.current.scrollTop = 0;
-		}
-		if (col2Ref.current) {
-			col2Ref.current.scrollTop = 0;
-		}
-		if (col3Ref.current && isCaseSubFullscreen) {
-			col3Ref.current.scrollTop = 0;
-		}
+		// Immediate scroll reset when component mounts
+		const resetScroll = () => {
+			window.scrollTo(0, 0);
+			document.body.scrollTop = 0;
+			document.documentElement.scrollTop = 0;
+			
+			if (modalContentRef.current) modalContentRef.current.scrollTop = 0;
+			if (col2Ref.current) col2Ref.current.scrollTop = 0;
+			if (col3Ref.current) col3Ref.current.scrollTop = 0;
+		};
+
+		resetScroll();
+		// Run reset after a short delay to ensure content is loaded
+		const timeoutId = setTimeout(resetScroll, 50);
+
+		return () => clearTimeout(timeoutId);
+	}, []); // Empty dependency array means this runs once on mount
+
+	useEffect(() => {
+		// Reset scroll positions first
+		if (modalContentRef.current) modalContentRef.current.scrollTop = 0;
+		if (col2Ref.current) col2Ref.current.scrollTop = 0;
+		if (col3Ref.current) col3Ref.current.scrollTop = 0;
+		window.scrollTo(0, 0);
+		
+		// Then handle other updates
 		adjustTitleFontSize();
 	}, [modalData, isCaseSubFullscreen]);
 
@@ -170,7 +187,6 @@ export default function CaseSubModal({
 
 	const renderPortrait = () => {
 		if (!modalData.portrait || !modalData.portrait.length) {
-		  console.log("No portrait available.");
 		  return null;
 		}
 	  

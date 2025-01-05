@@ -145,7 +145,7 @@ export default function ModalGrid({
 
   const openModal = (data) => {
     // Check if it's a mobile screen (you already had this logic)
-    const isMobile = window.innerWidth <= 768;
+    const isMobile = window.innerWidth <= 576;
 
     // If a case study is currently open:
     if (active.caseSubActive === true) {
