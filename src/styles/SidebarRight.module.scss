@@ -71,6 +71,7 @@
 	padding-bottom: 1em;
 	top: 2em;
 	position: absolute;
+	z-index: 1000;
 
 	> * {
 		//selects each first element in nav_top
