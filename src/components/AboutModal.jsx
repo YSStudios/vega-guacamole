@@ -222,8 +222,12 @@ export default function AboutModal({
                                   item.image.hotspot ? "focalpoint" : "center"
                                 )
                                 .focalPoint(
-                                  item.image.hotspot.x,
-                                  item.image.hotspot.y
+                                  item.image.hotspot
+                                    ? item.image.hotspot.x
+                                    : 0.5,
+                                  item.image.hotspot
+                                    ? item.image.hotspot.y
+                                    : 0.5
                                 )
                                 .url()}
                               alt={item.name || ""}

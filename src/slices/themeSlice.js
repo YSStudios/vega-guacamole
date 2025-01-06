@@ -1,23 +1,22 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const getInitialParticleColor = () => {
-  // If we're in the browser, check localStorage or any other source for saved theme
   if (typeof window !== "undefined") {
     const savedTheme = localStorage.getItem("theme");
     switch (savedTheme) {
       case "light":
-        return "#0000CC";
+        return { color: "#FF69B4", blendMode: "plus-lighter" };
       case "guava":
-        return "#00FF00";
+        return { color: "#00FF00", blendMode: "overlay" };
       case "inferno":
-        return "#ffffff";
+        return { color: "#ec8301", blendMode: "plus-lighter" };
       case "dark":
-        return "#FFFF00";
+        return { color: "#FFFFFF", blendMode: "plus-lighter" };
       default:
-        return "#FF0000"; // Default to theme1 color
+        return { color: "#FF0000", blendMode: "plus-lighter" }; // Default
     }
   }
-  return "#FF0000"; // Default for SSR
+  return { color: "#FF0000", blendMode: "plus-lighter" }; // Default for SSR
 };
 
 export const themeSlice = createSlice({
@@ -27,7 +26,8 @@ export const themeSlice = createSlice({
     themeActive2: false,
     themeActive3: false,
     themeActive4: false,
-    particleColor: getInitialParticleColor(),
+    particleColor: getInitialParticleColor().color,
+    blendMode: getInitialParticleColor().blendMode,
   },
   reducers: {
     themeActive1: (state) => {
@@ -37,7 +37,8 @@ export const themeSlice = createSlice({
         themeActive2: false,
         themeActive3: false,
         themeActive4: false,
-        particleColor: "#0000CC",
+        particleColor: "#FF69B4",
+        blendMode: "plus-lighter",
       };
     },
     themeActive2: (state) => {
@@ -48,6 +49,7 @@ export const themeSlice = createSlice({
         themeActive3: false,
         themeActive4: false,
         particleColor: "#00FF00",
+        blendMode: "overlay",
       };
     },
     themeActive3: (state) => {
@@ -57,7 +59,8 @@ export const themeSlice = createSlice({
         themeActive2: false,
         themeActive3: true,
         themeActive4: false,
-        particleColor: "#FFFFFF",
+        particleColor: "#ec8301",
+        blendMode: "plus-lighter",
       };
     },
     themeActive4: (state) => {
@@ -67,7 +70,8 @@ export const themeSlice = createSlice({
         themeActive2: false,
         themeActive3: false,
         themeActive4: true,
-        particleColor: "#FFFF00",
+        particleColor: "#FFFFFF",
+        blendMode: "plus-lighter",
       };
     },
   },
@@ -78,5 +82,6 @@ export const { themeActive1, themeActive2, themeActive3, themeActive4 } =
 
 export const themeValue = (state) => state.theme;
 export const particleColorValue = (state) => state.theme.particleColor;
+export const blendModeValue = (state) => state.theme.blendMode;
 
 export default themeSlice.reducer;
