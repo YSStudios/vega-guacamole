@@ -219,7 +219,16 @@ export async function getServerSideProps(context) {
         portrait[]{
           asset->{_id, _type, url}
         },
-        imageGallery1,
+        imageGallery1[]{
+          asset->{
+            _id,
+            _type,
+            url,
+            mimeType,
+            extension,
+            metadata
+          }
+        },
         body2,
         order,
         title,

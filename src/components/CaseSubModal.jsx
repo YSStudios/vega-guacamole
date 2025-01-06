@@ -87,7 +87,9 @@ export default function CaseSubModal({
 			return (
 			  <div className={imageGrid}>
 				{images.map((content, index) => {
-				  const imageUrl = content?.asset?.url || content;
+				  const assetType = content?.asset?._type;
+				  const isVideoAsset = assetType === "sanity.fileAsset";
+				  
 				  return (
 					<div
 					  key={`${index}-${imageVersion}`}
@@ -101,23 +103,36 @@ export default function CaseSubModal({
 					  }}
 					  style={{ position: "relative" }}
 					>
-					  <ProgressiveImage
-						src={
-						  isGif(imageUrl)
-							? urlFor(content).url()
-							: urlFor(content)
-								.format("webp")
-								.quality(80)
-								.fit("fillmax")
-								.url()
-						}
-						placeholderSrc={
-						  isGif(imageUrl)
-							? null
-							: urlFor(content).width(10).quality(20).blur(10).url()
-						}
-						alt={`${galleryKey} Slide ${index}`}
-					  />
+					  {isVideoAsset ? (
+						<video
+						  src={content.asset.url}
+						  autoPlay={true}
+						  loop
+						  muted
+						  playsInline
+						  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+						>
+						  Your browser does not support the video tag.
+						</video>
+					  ) : (
+						<ProgressiveImage
+						  src={
+							isGif(content?.asset?.url)
+							  ? urlFor(content).url()
+							  : urlFor(content)
+								  .format("webp")
+								  .quality(80)
+								  .fit("fillmax")
+								  .url()
+						  }
+						  placeholderSrc={
+							isGif(content?.asset?.url)
+							  ? null
+							  : urlFor(content).width(10).quality(20).blur(10).url()
+						  }
+						  alt={`${galleryKey} Slide ${index}`}
+						/>
+					  )}
 					</div>
 				  );
 				})}
@@ -195,59 +210,60 @@ export default function CaseSubModal({
 		const assetType = portraitItem?.asset?._type;
 	  
 		if (assetType === "sanity.imageAsset") {
-			console.log("portraitItem", portraitItem);
-		  return (
-			<ProgressiveImage
-			  src={urlFor(portraitItem)
-				.format("webp")
-				.quality(80)
-				.fit("max")
-				.url()}
-			  placeholderSrc={urlFor(portraitItem)
-				.width(10)
-				.quality(20)
-				.blur(10)
-				.url()}
-			  alt="Portrait image"
-			/>
-		  );
+			return (
+			  <ProgressiveImage
+				src={urlFor(portraitItem)
+				  .format("webp")
+				  .quality(80)
+				  .fit("max")
+				  .url()}
+				placeholderSrc={urlFor(portraitItem)
+				  .width(10)
+				  .quality(20)
+				  .blur(10)
+				  .url()}
+				alt="Portrait image"
+			  />
+			);
 		} else if (assetType === "sanity.fileAsset") {
-		  const videoUrl = portraitItem.asset.url;
-		  console.log("videoUrl", videoUrl);
-		  return (
-			<video
-			  src={videoUrl}
-			  autoPlay={true}
-			  loop
-			  muted
-			  playsInline
-			  width={"100%"}
-			  height={"100%"}
-			  objectfit="cover"
-			>
-			  Your browser does not support the video tag.
-			</video>
-		  );
-		} else {
-		  console.log("Unsupported asset type or asset is null:", assetType);
-		  return null;
+			const videoUrl = portraitItem?.asset?.url;
+			if (!videoUrl) {
+			  console.warn("Video URL is missing from asset");
+			  return null;
+			}
+
+			return (
+			  <video
+				src={videoUrl}
+				autoPlay={true}
+				loop
+				muted
+				playsInline
+				style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+			  >
+				Your browser does not support the video tag.
+			  </video>
+			);
 		}
+
+		console.warn("Unsupported asset type or asset is null:", assetType);
+		return null;
 	};
 	  
 	return (
 		<div className={`${styles.content_wrap} ${styles.subModal}`}>
 			<ModalNav
 				modalName={modalName}
-				handleModalResize={handleModalResize}
-				modalRef={modalRef}
-				resize={resize}
-				toggle={toggle}
-				dispatch={dispatch}
+					handleModalResize={handleModalResize}
+					modalRef={modalRef}
+					resize={resize}
+					toggle={toggle}
+					dispatch={dispatch}
 			/>
 			<div
 				className={styles.modal_content}
 				ref={modalContentRef}
-			>
+				>
 				<div
 					ref={maximizeRef}
 					className={styles.modal_body}
