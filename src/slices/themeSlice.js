@@ -5,18 +5,18 @@ const getInitialParticleColor = () => {
     const savedTheme = localStorage.getItem("theme");
     switch (savedTheme) {
       case "light":
-        return { color: "#FF69B4", blendMode: "plus-lighter" };
+        return { color: "#ffc0cb", blendMode: "plus-lighter" };
       case "guava":
         return { color: "#00FF00", blendMode: "overlay" };
       case "inferno":
-        return { color: "#ec8301", blendMode: "plus-lighter" };
+        return { color: "#FAE95A", blendMode: "plus-lighter" };
       case "dark":
         return { color: "#FFFFFF", blendMode: "plus-lighter" };
       default:
-        return { color: "#FF0000", blendMode: "plus-lighter" }; // Default
+        return { color: "#ffc0cb", blendMode: "plus-lighter" }; // Default
     }
   }
-  return { color: "#FF0000", blendMode: "plus-lighter" }; // Default for SSR
+  return { color: "#ffc0cb", blendMode: "plus-lighter" }; // Default for SSR
 };
 
 export const themeSlice = createSlice({
@@ -37,7 +37,7 @@ export const themeSlice = createSlice({
         themeActive2: false,
         themeActive3: false,
         themeActive4: false,
-        particleColor: "#FF69B4",
+        particleColor: "#ffc0cb",
         blendMode: "plus-lighter",
       };
     },

@@ -33,7 +33,7 @@ const ParticleCRTShader = {
       gl_Position = projectionMatrix * mvPosition;
       
       // Reduce point size multiplier from 3.5 to 2.5
-      gl_PointSize = 2.1 * (1000.0 / -mvPosition.z);
+      gl_PointSize = 2.5 * (1000.0 / -mvPosition.z);
       
       // Pass distance to fragment shader
       vDistance = length(position);
@@ -59,21 +59,6 @@ const ParticleCRTShader = {
       // Screen position
       vec2 screenPos = gl_FragCoord.xy / resolution.xy;
       
-      // Enhanced CRT scanline effect
-      float scanline = sin(gl_FragCoord.y * 0.7 + time * 10.0) * 0.15 + 0.85;
-      float scanline2 = sin(gl_FragCoord.y * 2.0 + time * 15.0) * 0.05;
-      float verticalLines = sin(screenPos.x * 500.0) * 0.1 + 0.9;
-      
-      // Vignette effect - adjust the smoothstep values to reduce the vignette
-      // First value: increase to reduce vignette size (was 0.5)
-      // Second value: increase to make the fade more gradual (was 0.2)
-      vec2 center = vec2(0.5, 0.5);
-      float dist = length(screenPos - center);
-      float vignette = smoothstep(0.8, 0.4, dist);
-      
-      // Static noise
-      float noise = random(screenPos + time) * 0.05;
-      
       // RGB split / chromatic aberration
       float aberration = 0.01;
       vec2 ra = vec2(aberration, 0.0);
@@ -91,17 +76,16 @@ const ParticleCRTShader = {
         texColor.a
       );
       
-      // Apply all effects
-      finalColor.rgb *= (scanline + scanline2) * verticalLines;
+      // Static noise
+      float noise = random(screenPos + time) * 0.05;
       finalColor.rgb += noise;
-      finalColor.rgb *= vignette;
       
       // Flicker effect
       float flicker = sin(time * 20.0) * 0.02 + 0.98;
       finalColor.rgb *= flicker;
       
       // Distance fade
-      float fade = smoothstep(1000.0, 0.0, vDistance);
+      float fade = smoothstep(2000.0, 0.0, vDistance);
       finalColor.a *= fade;
       
       gl_FragColor = finalColor;
@@ -532,13 +516,14 @@ const MapComponent = ({ animationSpeedRef }) => {
     const renderScene = new RenderPass(sceneRef.current, cameraRef.current);
     composerRef.current.addPass(renderScene);
 
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
-      settings.bloomPass.strength,
-      settings.bloomPass.radius,
-      settings.bloomPass.threshold
-    );
-    composerRef.current.addPass(bloomPass);
+    // Remove the bloom pass
+    // const bloomPass = new UnrealBloomPass(
+    //   new THREE.Vector2(window.innerWidth, window.innerHeight),
+    //   settings.bloomPass.strength,
+    //   settings.bloomPass.radius,
+    //   settings.bloomPass.threshold
+    // );
+    // composerRef.current.addPass(bloomPass);
 
     const imageURL = themeImages[Object.keys(theme).find((key) => theme[key])];
 
@@ -559,6 +544,36 @@ const MapComponent = ({ animationSpeedRef }) => {
   };
 
   const createBackgroundParticles = () => {
+    // Create circle texture for background particles
+    const circleTexture = (() => {
+        const canvas = document.createElement('canvas');
+        const size = 500;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        // Clear the canvas
+        ctx.clearRect(0, 0, size, size);
+
+        // Create a perfect circle with soft edges
+        const gradient = ctx.createRadialGradient(
+            size / 2, size / 2, 0,
+            size / 2, size / 2, size / 2
+        );
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.5)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        const texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        return texture;
+    })();
+
     const particleCount = 4000;
     const geometry = new THREE.BufferGeometry();
     const vertices = [];
@@ -601,12 +616,14 @@ const MapComponent = ({ animationSpeedRef }) => {
     );
 
     const material = new THREE.PointsMaterial({
-      size: 3.0,
-      color: new THREE.Color(particleColor),
-      transparent: true,
-      opacity: 0.15,
-      sizeAttenuation: true,
-      blending: THREE.AdditiveBlending,
+        size: 15.0,
+        color: new THREE.Color(particleColor),
+        transparent: true,
+        opacity: 0.7,
+        sizeAttenuation: true,
+        blending: THREE.AdditiveBlending,
+        map: circleTexture,
+        alphaTest: 0.1
     });
 
     backgroundParticlesRef.current = new THREE.Points(geometry, material);
@@ -740,7 +757,7 @@ const MapComponent = ({ animationSpeedRef }) => {
 
         positions[i] += (Math.random() - 0.5) * 0.05;
         positions[i + 1] += (Math.random() - 0.5) * 0.05;
-        positions[i + 2] += (Math.random() - 0.5) * 0.05;
+        positions[i + 2] += (Math.random() - 0.05) * 0.05;
       }
 
       particlesRef.current.geometry.attributes.position.needsUpdate = true;
@@ -962,8 +979,6 @@ const MapComponent = ({ animationSpeedRef }) => {
           position: "absolute",
           top: 0,
           left: 0,
-          zIndex: 1,
-          mixBlendMode: "plus-lighter",
         }}
       />
     </>

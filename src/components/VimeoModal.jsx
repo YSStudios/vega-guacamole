@@ -5,7 +5,7 @@ import { modalValue } from "../slices/modalSlice";
 import Image from "next/image";
 import maximizeBtn from "../assets/svg/maximize-btn.svg";
 import closeBtn from "../assets/svg/close-btn.svg";
-import loader from "../assets/svg/vega-rotate-transparent.gif";
+// import loader from "../assets/svg/vega";
 
 export default function VimeoModal({
   modalName,
@@ -167,15 +167,17 @@ export default function VimeoModal({
         </div>
         <div className={styles.modal_content}>
           <div ref={maximizeRef} className={styles.modal_body_relative}>
-            {isLoading && (
+            {/* {isLoading && (
               <div className={styles.loader_wrapper}>
-                <Image
-                  src={loader}
-                  alt="Loading..."
-                  className={styles.loader}
-                />
+                <Image 
+                    src="https://res.cloudinary.com/dtps5ugbf/image/upload/v1736111388/vega-website-320_tdxqhz.gif"
+                    alt="Vega Animation"
+                    width={250}
+                    height={250}
+                    priority
+                  />
               </div>
-            )}
+            )} */}
             <video
               ref={videoRef}
               src={vegaTv[currentVideoIndex]}
