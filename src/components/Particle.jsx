@@ -12,95 +12,130 @@ import MatrixText from "./MatrixText";
 
 const ParticleCRTShader = {
   uniforms: {
-    time: { value: 0 },
     color: { value: new THREE.Color() },
+    glowColor: { value: new THREE.Color() },
+    time: { value: 0 },
     pointTexture: { value: null },
-    resolution: {
-      value: new THREE.Vector2(
-        typeof window !== "undefined" ? window.innerWidth : 800,
-        typeof window !== "undefined" ? window.innerHeight : 600
-      ),
-    },
+    mousePosition: { value: new THREE.Vector3() },
+    prevMousePosition: { value: new THREE.Vector3() },
+    resolution: { value: new THREE.Vector2() },
   },
   vertexShader: `
     attribute vec3 destination;
     varying vec2 vUv;
     varying float vDistance;
+    varying vec3 vPosition;
     
     void main() {
       vUv = uv;
+      vPosition = position;
       vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
       gl_Position = projectionMatrix * mvPosition;
-      
-      // Reduce point size multiplier from 3.5 to 2.5
-      gl_PointSize = 2.1 * (1000.0 / -mvPosition.z);
-      
-      // Pass distance to fragment shader
+      gl_PointSize = 1.5 * (1000.0 / -mvPosition.z);
       vDistance = length(position);
     }
   `,
   fragmentShader: `
     uniform vec3 color;
+    uniform vec3 glowColor;
     uniform float time;
     uniform sampler2D pointTexture;
     uniform vec2 resolution;
+    uniform vec3 mousePosition;
+    uniform vec3 prevMousePosition;
     
     varying vec2 vUv;
     varying float vDistance;
+    varying vec3 vPosition;
     
     float random(vec2 st) {
       return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
     }
     
     void main() {
-      // Basic particle texture
       vec4 texColor = texture2D(pointTexture, gl_PointCoord);
-      
-      // Screen position
       vec2 screenPos = gl_FragCoord.xy / resolution.xy;
       
-      // Enhanced CRT scanline effect
+      vec3 mouseDir = normalize(mousePosition - prevMousePosition);
+      vec3 particleToMouse = normalize(mousePosition - vPosition);
+      
+      float dirFactor = dot(mouseDir, particleToMouse);
+      dirFactor = smoothstep(-0.2, 1.0, dirFactor);
+      
+      float mouseDistance = length(vPosition - mousePosition);
+      float innerRadius = 100.0;
+      float ringWidth = 30.0;
+      float outerRadius = innerRadius + ringWidth;
+      
+      float innerFade = smoothstep(innerRadius - ringWidth * 0.7, innerRadius, mouseDistance);
+      float outerFade = smoothstep(outerRadius, outerRadius - ringWidth * 0.7, mouseDistance);
+      float ringGlow = innerFade * outerFade;
+      
+      ringGlow *= mix(0.5, 2.0, dirFactor);
+      
+      float pulseTime = time * 1.5;
+      float pulseFactor = sin(pulseTime) * 0.1 + 0.9;
+      ringGlow *= pulseFactor;
+      
+      float approachFactor = smoothstep(outerRadius + 50.0, outerRadius, mouseDistance);
+      ringGlow *= approachFactor;
+      
+      float glowIntensity = ringGlow * (2.5 + dirFactor * 2.0);
+      
       float scanline = sin(gl_FragCoord.y * 0.7 + time * 10.0) * 0.15 + 0.85;
       float scanline2 = sin(gl_FragCoord.y * 2.0 + time * 15.0) * 0.05;
       float verticalLines = sin(screenPos.x * 500.0) * 0.1 + 0.9;
       
-      // Vignette effect - adjust the smoothstep values to reduce the vignette
-      // First value: increase to reduce vignette size (was 0.5)
-      // Second value: increase to make the fade more gradual (was 0.2)
       vec2 center = vec2(0.5, 0.5);
       float dist = length(screenPos - center);
       float vignette = smoothstep(0.8, 0.4, dist);
       
-      // Static noise
-      float noise = random(screenPos + time) * 0.05;
+      float noise = random(screenPos + time) * 0.08;
       
-      // RGB split / chromatic aberration
-      float aberration = 0.01;
-      vec2 ra = vec2(aberration, 0.0);
+      float aberration = 0.03;
+      vec2 ra = vec2(aberration, aberration * 0.5);
       vec2 ga = vec2(0.0, 0.0);
-      vec2 ba = vec2(-aberration, 0.0);
+      vec2 ba = vec2(-aberration, -aberration * 0.5);
       
       vec4 colorR = texture2D(pointTexture, gl_PointCoord + ra);
       vec4 colorG = texture2D(pointTexture, gl_PointCoord + ga);
       vec4 colorB = texture2D(pointTexture, gl_PointCoord + ba);
       
-      vec4 finalColor = vec4(
-        colorR.r * color.r,
+      vec3 baseColor = vec3(
+        colorR.r * color.r * 1.2,
         colorG.g * color.g,
-        colorB.b * color.b,
-        texColor.a
+        colorB.b * color.b * 1.1
       );
       
-      // Apply all effects
-      finalColor.rgb *= (scanline + scanline2) * verticalLines;
+      vec3 glowColorIntensified = glowColor * (2.0 + dirFactor);
+      vec3 finalRGB = mix(
+        baseColor,
+        glowColorIntensified,
+        glowIntensity * smoothstep(1.0, 0.0, mouseDistance / (outerRadius + 30.0))
+      );
+      
+      float rimLight = pow(ringGlow, 2.0) * (1.5 + dirFactor);
+      finalRGB += glowColor * rimLight * approachFactor;
+      
+      vec4 finalColor = vec4(finalRGB, texColor.a);
+      
+      float enhancedScanline = scanline * 0.8 + 
+                              sin(gl_FragCoord.y * 0.5 + time * 5.0) * 0.2;
+      
+      finalColor.rgb *= (enhancedScanline + scanline2) * verticalLines;
       finalColor.rgb += noise;
       finalColor.rgb *= vignette;
       
-      // Flicker effect
-      float flicker = sin(time * 20.0) * 0.02 + 0.98;
+      float flicker = sin(time * 20.0) * 0.03 + 0.97;
       finalColor.rgb *= flicker;
       
-      // Distance fade
+      float bleed = sin(gl_FragCoord.y * 0.1 + time) * 0.02;
+      finalColor.r += bleed;
+      finalColor.b -= bleed;
+      
+      float edgePulse = sin(time * 2.0 + mouseDistance * 0.05) * 0.1 + 0.9;
+      finalColor.rgb += glowColor * ringGlow * edgePulse * approachFactor * (1.0 + dirFactor);
+      
       float fade = smoothstep(1000.0, 0.0, vDistance);
       finalColor.a *= fade;
       
@@ -381,10 +416,7 @@ const MapComponent = ({ animationSpeedRef }) => {
       canvas.height = size;
       const ctx = canvas.getContext("2d");
 
-      // Clear the canvas
       ctx.clearRect(0, 0, size, size);
-
-      // Create a perfect circle with soft edges
       const gradient = ctx.createRadialGradient(
         size / 2,
         size / 2,
@@ -409,13 +441,26 @@ const MapComponent = ({ animationSpeedRef }) => {
 
     const geometry = new THREE.BufferGeometry();
 
-    // Create custom shader material
     const material = new THREE.ShaderMaterial({
       uniforms: {
         color: { value: new THREE.Color(currentParticleColor) },
+        glowColor: {
+          value: new THREE.Color(
+            currentParticleColor === "#00FF00"
+              ? "#FFFFFF"
+              : currentParticleColor
+          ).multiplyScalar(1.5),
+        },
         pointTexture: { value: circleTexture },
         time: { value: 0 },
-        resolution: { value: new THREE.Vector2(ww, wh) },
+        mousePosition: { value: new THREE.Vector3(10000, 10000, 0) },
+        prevMousePosition: { value: new THREE.Vector3(10000, 10000, 0) },
+        resolution: {
+          value: new THREE.Vector2(
+            typeof window !== "undefined" ? window.innerWidth : 800,
+            typeof window !== "undefined" ? window.innerHeight : 600
+          ),
+        },
       },
       vertexShader: ParticleCRTShader.vertexShader,
       fragmentShader: ParticleCRTShader.fragmentShader,
@@ -430,8 +475,8 @@ const MapComponent = ({ animationSpeedRef }) => {
     const dispersionRange = 1000;
     const depthRange = 100;
 
-    const yStep = 3;
-    const xStep = 8;
+    const yStep = 2;
+    const xStep = 7;
 
     for (let y = 0, y2 = imagedata.height; y < y2; y += yStep) {
       for (let x = 0, x2 = imagedata.width; x < x2; x += xStep) {
@@ -601,7 +646,7 @@ const MapComponent = ({ animationSpeedRef }) => {
     );
 
     const material = new THREE.PointsMaterial({
-      size: 3.0,
+      size: 2.0,
       color: new THREE.Color(particleColor),
       transparent: true,
       opacity: 0.15,
@@ -614,16 +659,33 @@ const MapComponent = ({ animationSpeedRef }) => {
   };
 
   const handleMouseMove = (event) => {
-    mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    if (
+      particlesRef.current?.material?.uniforms?.prevMousePosition &&
+      particlesRef.current?.material?.uniforms?.mousePosition
+    ) {
+      particlesRef.current.material.uniforms.prevMousePosition.value.copy(
+        particlesRef.current.material.uniforms.mousePosition.value
+      );
 
-    const vector = new THREE.Vector3(mouseRef.current.x, mouseRef.current.y, 0);
-    vector.unproject(cameraRef.current);
-    const dir = vector.sub(cameraRef.current.position).normalize();
-    const distance = -cameraRef.current.position.z / dir.z;
-    mouseRef.current.worldPosition = cameraRef.current.position
-      .clone()
-      .add(dir.multiplyScalar(distance));
+      mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      const vector = new THREE.Vector3(
+        mouseRef.current.x,
+        mouseRef.current.y,
+        0
+      );
+      vector.unproject(cameraRef.current);
+      const dir = vector.sub(cameraRef.current.position).normalize();
+      const distance = -cameraRef.current.position.z / dir.z;
+      mouseRef.current.worldPosition = cameraRef.current.position
+        .clone()
+        .add(dir.multiplyScalar(distance));
+
+      particlesRef.current.material.uniforms.mousePosition.value.copy(
+        mouseRef.current.worldPosition
+      );
+    }
   };
 
   const handleTouchMove = (event) => {
@@ -748,15 +810,21 @@ const MapComponent = ({ animationSpeedRef }) => {
 
     if (cameraRef.current && !isSpinningRef.current) {
       const time = Date.now() * 0.0002;
-      const initialZ = 400;
+      const initialZ = 700;
+      const initialX = 0;
+      const initialY = 0;
+      const initialFOV = 75;
+
       const zAmplitude = 50;
       const xAmplitude = 100;
       const fovAmplitude = 10;
-      const initialFOV = 110;
 
       cameraRef.current.position.z = initialZ + Math.sin(time) * zAmplitude;
-      cameraRef.current.position.x = Math.sin(time * 0.5) * xAmplitude;
+      cameraRef.current.position.x =
+        initialX + Math.sin(time * 0.5) * xAmplitude;
+      cameraRef.current.position.y = initialY;
       cameraRef.current.fov = initialFOV + Math.sin(time * 0.5) * fovAmplitude;
+
       cameraRef.current.lookAt(
         Math.sin(time * 0.2) * 10,
         Math.cos(time * 0.2) * 10,
@@ -806,7 +874,6 @@ const MapComponent = ({ animationSpeedRef }) => {
       backgroundParticlesRef.current.geometry.attributes.position.needsUpdate = true;
     }
 
-    // Update particle shader time
     if (particlesRef.current && particlesRef.current.material.uniforms) {
       particlesRef.current.material.uniforms.time.value = Date.now() * 0.001;
     }
@@ -841,7 +908,6 @@ const MapComponent = ({ animationSpeedRef }) => {
       cameraRef.current.aspect = ww / wh;
       cameraRef.current.updateProjectionMatrix();
 
-      // Update resolution uniform
       if (particlesRef.current && particlesRef.current.material) {
         particlesRef.current.material.uniforms.resolution.value.set(ww, wh);
       }
@@ -913,6 +979,16 @@ const MapComponent = ({ animationSpeedRef }) => {
     );
   };
 
+  useEffect(() => {
+    if (particlesRef.current && particlesRef.current.material) {
+      particlesRef.current.material.uniforms.color.value.set(particleColor);
+      const glowColor = particleColor === "#00FF00" ? "#FFFFFF" : particleColor;
+      particlesRef.current.material.uniforms.glowColor.value
+        .set(glowColor)
+        .multiplyScalar(1.5);
+    }
+  }, [particleColor]);
+
   return (
     <>
       <div
@@ -962,7 +1038,7 @@ const MapComponent = ({ animationSpeedRef }) => {
           position: "absolute",
           top: 0,
           left: 0,
-          zIndex: 1,
+          // zIndex: 1,
           mixBlendMode: "plus-lighter",
         }}
       />
