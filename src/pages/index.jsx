@@ -6,7 +6,7 @@ import Header from "../components/Header";
 import SidebarRight from "../components/SidebarRight";
 import ModalGrid from "../components/ModalGrid";
 import IntroButton from "../components/IntroButton";
-import { createClient } from "next-sanity";
+import { createClient } from "@sanity/client";
 import imageUrlBuilder from "@sanity/image-url";
 import gsap from "gsap";
 import { Draggable } from "../../gsap";
@@ -20,7 +20,6 @@ const client = createClient({
   projectId: "yqk7lu4g",
   dataset: "production",
   apiVersion: "2023-03-11",
-  token: process.env.SANITY_TOKEN,
   useCdn: true,
 });
 
