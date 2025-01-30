@@ -11,6 +11,7 @@
 	background-color: #C4C5C633;
 	justify-content: space-between;
 	transition: opacity 0.3s ease;
+	z-index: 2;
 
 	&.fadeIn {
 		opacity: 1;

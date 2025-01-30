@@ -619,15 +619,15 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	background-color: rgba(0, 0, 0, 0.5);
-	background: url("../assets/svg/static.gif");
+	background-color: rgba(0, 0, 0, 0.75);
+	// background: url("../assets/svg/static.gif");
 	background-size: cover;
 	background-repeat: no-repeat;
 	z-index: 0;
 }
 
 .loader {
-	width: 35%;
+	width: 75%;
 	height: auto;
 }
 
