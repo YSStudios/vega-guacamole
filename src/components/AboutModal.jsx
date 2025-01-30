@@ -85,7 +85,7 @@ export default function AboutModal({
                 <li>
                   <div className={styles.list_item}>
                     <div className={styles.list_title}>Services</div>
-                    <div className={styles.list_content}>3D, AR, Web</div>
+                    <div className={styles.list_content}>CGI, XR, AI</div>
                   </div>
                 </li>
                 <li>
@@ -103,6 +103,7 @@ export default function AboutModal({
                   </div>
                 </li>
               </ul>
+              <a className={styles.about_email} href="mailto:contact@vega.earth">contact@vega.earth</a>
               <button
                 className={styles.about_moreinfo}
                 onClick={() => handleModalResize(modalRef, resize)}

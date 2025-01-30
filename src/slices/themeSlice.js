@@ -11,12 +11,12 @@ const getInitialParticleColor = () => {
       case "inferno":
         return { color: "#ec8301", blendMode: "plus-lighter" };
       case "dark":
-        return { color: "#FFFFFF", blendMode: "plus-lighter" };
+        return { color: "#a9a9a9", blendMode: "plus-lighter" };
       default:
-        return { color: "#FF0000", blendMode: "plus-lighter" }; // Default
+        return { color: "#FF69B4", blendMode: "plus-lighter" };
     }
   }
-  return { color: "#FF0000", blendMode: "plus-lighter" }; // Default for SSR
+  return { color: "#FF69B4", blendMode: "plus-lighter" };
 };
 
 export const themeSlice = createSlice({
@@ -70,8 +70,8 @@ export const themeSlice = createSlice({
         themeActive2: false,
         themeActive3: false,
         themeActive4: true,
-        particleColor: "#FFFFFF",
-        blendMode: "plus-lighter",
+        particleColor: "#a9a9a9",
+        blendMode: "normal",
       };
     },
   },

@@ -26,6 +26,10 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 		overflow: auto;
 	}
 
+	.about_email {
+		display: none;
+	}
+
 	.about_moreinfo {
 		display: none;
 	}
@@ -206,8 +210,12 @@ $light-gray-trans: rgb(204 204 204 / 36%);
 	}
 }
 
+.about_email {
+	font-size: 0.9em;
+}
+
 .about_moreinfo {
-	margin-top: 2em;
+	margin-top: .75em;
 	appearance: none;
 	color: black;
 	border-radius: 0.5em;

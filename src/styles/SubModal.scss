@@ -217,31 +217,31 @@
 .fullscreen {
 	.subModal {
 		.project_info {
-			p {
-				padding-left: 4em;
-			}
+			// p {
+			// 	padding-left: 4em;
+			// }
 
 			//on the 3rd p tag, add an icon to the left
-			p:nth-child(3) {
-				position: relative;
+			// p:nth-child(3) {
+			// 	position: relative;
 
-				&:before {
-					content: "";
-					background-image: url("../assets/svg/circle-star.svg");
-					background-repeat: no-repeat;
-					position: absolute;
-					top: 0.2em;
-					left: .5em;
-					width: 2em;
-					height: 2em;
-					z-index: -1;
-					background-size: contain;
+			// 	&:before {
+			// 		content: "";
+			// 		background-image: url("../assets/svg/circle-star.svg");
+			// 		background-repeat: no-repeat;
+			// 		position: absolute;
+			// 		top: 0.2em;
+			// 		left: .5em;
+			// 		width: 2em;
+			// 		height: 2em;
+			// 		z-index: -1;
+			// 		background-size: contain;
 
-					[data-theme="dark"] & {
-						filter: invert(1);
-					}
-				}
-			}
+			// 		[data-theme="dark"] & {
+			// 			filter: invert(1);
+			// 		}
+			// 	}
+			// }
 		}
 
 		.title {
@@ -263,6 +263,7 @@
 		}
 		.col3 {
 			flex: auto;
+			padding-left: .25em;
 		}
 
 		.services {
