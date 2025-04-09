@@ -14,6 +14,8 @@ import NoiseBackground from "../components/NoiseBackground";
 import { useSelector, useDispatch } from "react-redux";
 import FullScreenVideo from "../components/FullScreenVideo";
 import styles from "../styles/Mixins.module.scss";
+import { INSTAGRAM_FEED } from "../types/instagram";
+import { v4 as uuidv4 } from "uuid";
 
 // Creating the client and builder outside of components
 const client = createClient({
@@ -35,6 +37,7 @@ export default function Home({
   instaFeed,
   vegaTv,
   songData,
+  sanityInstaData,
 }) {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
@@ -184,6 +187,7 @@ export default function Home({
         isCaseStudyClicked={isCaseStudyClicked}
         setIsCaseStudyClicked={setIsCaseStudyClicked}
         className="fadeIn"
+        sanityInstaData={sanityInstaData}
       />
       <audio
         ref={vegaButtonSoundRef}
@@ -196,17 +200,24 @@ export default function Home({
 export async function getServerSideProps(context) {
   try {
     // Fetch all data in parallel
-    const [weatherResponse, caseStudies, vegaTvData, about, trans, songData] =
-      await Promise.all([
-        fetch(
-          "https://api.openweathermap.org/data/2.5/weather?" +
-            new URLSearchParams({
-              q: "new york",
-              units: "imperial",
-              appid: process.env.WEATHER_KEY,
-            })
-        ),
-        client.fetch(`*[_type == "caseStudies" && !(_id in path("drafts.**"))]{
+    const [
+      weatherResponse,
+      caseStudies,
+      vegaTvData,
+      about,
+      trans,
+      songData,
+      sanityInstaData,
+    ] = await Promise.all([
+      fetch(
+        "https://api.openweathermap.org/data/2.5/weather?" +
+          new URLSearchParams({
+            q: "new york",
+            units: "imperial",
+            appid: process.env.WEATHER_KEY,
+          })
+      ),
+      client.fetch(`*[_type == "caseStudies" && !(_id in path("drafts.**"))]{
         header,
         image {
           asset->{url, metadata},
@@ -234,8 +245,8 @@ export async function getServerSideProps(context) {
         subtitle,
         services
       } | order(order asc)`),
-        client.fetch('*[_type == "vegaTv"][0]'),
-        client.fetch(`*[_type == "about"]{
+      client.fetch('*[_type == "vegaTv"][0]'),
+      client.fetch(`*[_type == "about"]{
         header,
         "logoWebMUrl": logoWebm.asset->url,
         "logoMovUrl": logoMov.asset->url,
@@ -264,7 +275,7 @@ export async function getServerSideProps(context) {
           list
         }
       }`),
-        client.fetch(`*[_type == "Gen-Synth"]{
+      client.fetch(`*[_type == "Gen-Synth"]{
         header,
         imagesGallery[] {
           asset->
@@ -279,7 +290,7 @@ export async function getServerSideProps(context) {
         },
         body2
       }`),
-        client.fetch(`*[_type == "song"] {
+      client.fetch(`*[_type == "song"] {
         _id,
         _createdAt,
         _updatedAt,
@@ -316,9 +327,46 @@ export async function getServerSideProps(context) {
         },
         active
       }`),
-      ]);
+      client.fetch(`*[_type == "instagram"][0] {
+          title,
+          posts[] {
+            id,
+            media_type,
+            media_url,
+            thumbnail_url,
+            permalink,
+            caption,
+            timestamp,
+            likes,
+            comments
+          },
+          assets {
+            "vegaLogo": vegaLogo.asset->,
+            "likeIcon": likeIcon.asset->,
+            "commentIcon": commentIcon.asset->,
+            "closeButton": closeButton.asset->
+          },
+          instagramProfile
+        }`),
+    ]);
 
     const weatherData = await weatherResponse.json();
+
+    // We no longer need this since the default data is already included in sanityInstaData
+    // from our fetchSanityInstagramData function
+    if (sanityInstaData && sanityInstaData.posts) {
+      // Check if any post is missing an ID
+      const hasMissingIds = sanityInstaData.posts.some((post) => !post.id);
+      if (hasMissingIds) {
+        // Only process if needed
+        sanityInstaData.posts = sanityInstaData.posts.map((post) => {
+          return {
+            ...post,
+            id: post.id || uuidv4(),
+          };
+        });
+      }
+    }
 
     return {
       props: {
@@ -328,6 +376,13 @@ export async function getServerSideProps(context) {
         vegaTv: vegaTvData,
         trans,
         songData,
+        // No need to pass instaFeed separately since it's already in sanityInstaData
+        instaFeed: [], // Empty array as sanityInstaData now includes default items
+        sanityInstaData: sanityInstaData || {
+          title: "Instagram Feed",
+          posts: INSTAGRAM_FEED,
+          instagramProfile: "https://www.instagram.com/vega.us/",
+        },
       },
     };
   } catch (error) {
@@ -341,6 +396,12 @@ export async function getServerSideProps(context) {
         vegaTv: null,
         trans: null,
         songData: null,
+        instaFeed: [],
+        sanityInstaData: {
+          title: "Instagram Feed",
+          posts: INSTAGRAM_FEED,
+          instagramProfile: "https://www.instagram.com/vega.us/",
+        },
       },
     };
   }

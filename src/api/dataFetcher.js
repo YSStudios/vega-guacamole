@@ -1,5 +1,6 @@
-import { createClient } from "next-sanity";
+import { createClient } from "@sanity/client";
 import imageUrlBuilder from "@sanity/image-url";
+import { INSTAGRAM_FEED } from "../types/instagram";
 
 const client = createClient({
   projectId: "yqk7lu4g",
@@ -138,4 +139,57 @@ export async function fetchInstagramData() {
   const instagramUrl = `http://graph.instagram.com/me/media?fields=id,caption,media_url,timestamp,media_type,permalink,thumbnail_url&access_token=${apiKey}`;
   const instagramData = await fetch(instagramUrl);
   return instagramData.json();
+}
+
+export async function fetchSanityInstagramData() {
+  const { v4: uuidv4 } = await import("uuid");
+
+  try {
+    // Get data from Sanity
+    const sanityData = await client.fetch(`*[_type == "instagram"][0] {
+      title,
+      "posts": posts[] {
+        id,
+        media_type,
+        media_url,
+        thumbnail_url,
+        permalink,
+        caption,
+        timestamp,
+        likes,
+        comments
+      },
+      instagramProfile
+    }`);
+
+    // If we got data from Sanity, ensure IDs
+    if (sanityData && sanityData.posts) {
+      sanityData.posts = sanityData.posts.map((post) => ({
+        ...post,
+        id: post.id || uuidv4(),
+      }));
+
+      // Combine default posts with Sanity posts
+      // Create a new result with default data
+      return {
+        ...sanityData,
+        posts: [...INSTAGRAM_FEED, ...sanityData.posts],
+      };
+    }
+
+    // If no Sanity data, return an object with default feed
+    return {
+      title: "Instagram Feed",
+      posts: INSTAGRAM_FEED,
+      instagramProfile: "https://www.instagram.com/vega.us/",
+    };
+  } catch (error) {
+    console.error("Error fetching Instagram data from Sanity:", error);
+    // Return default data in case of error
+    return {
+      title: "Instagram Feed",
+      posts: INSTAGRAM_FEED,
+      instagramProfile: "https://www.instagram.com/vega.us/",
+    };
+  }
 }
