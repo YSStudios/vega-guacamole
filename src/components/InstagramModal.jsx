@@ -199,7 +199,10 @@ export default function InstagramModal({
           className={styles.close_window}
           width={20}
           height={20}
-          onClick={() => dispatch(toggle())}
+          onClick={(e) => {
+            e.preventDefault();
+            handleCloseModal();
+          }}
         />
       </div>
       <div className={`${styles.ig_modal_title_wrap} dragTrigger`}>

@@ -8,9 +8,7 @@ export default async function handler(req, res) {
   const { email, password } = req.body;
 
   // Add your authorized admin emails
-  const authorizedEmails = [
-    "admin@vega.earth", // Replace with your admin email
-  ];
+  const authorizedEmails = ["admin@vega.earth", "kirill@kirill.agency"];
 
   // Very basic authentication - you should implement more secure methods
   if (
