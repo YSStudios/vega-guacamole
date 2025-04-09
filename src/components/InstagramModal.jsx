@@ -180,26 +180,33 @@ export default function InstagramModal({
     }
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = (e) => {
+    // If this was called directly from an event, prevent default
+    if (e && typeof e.preventDefault === "function") {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    // Dispatch the toggle action to close the modal
     dispatch(toggle());
+
+    // Create and dispatch the custom event for cleanup
     const closeModalEvent = new Event("modalClose");
     document.dispatchEvent(closeModalEvent);
+
+    // Return false to prevent default browser behavior
+    return false;
   };
 
   return (
     <div className={styles.ig_modal}>
       <div className={styles.ig_modal_nav}>
-        <Image
-          src={closeBtn}
-          alt="close window"
-          className={styles.close_window}
-          width={20}
-          height={20}
-          onClick={(e) => {
-            e.preventDefault();
-            handleCloseModal();
-          }}
-        />
+        <div
+          className={`${styles.close_window}`}
+          onClick={(e) => handleCloseModal(e)}
+        >
+          <Image src={closeBtn} alt="Close Modal" />
+        </div>
       </div>
       <div className={`${styles.ig_modal_title_wrap} dragTrigger`}>
         <svg
