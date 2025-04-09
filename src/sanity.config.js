@@ -13,4 +13,8 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
+  document: {
+    // Enable document actions and hooks for automatic ID generation
+    actions: (prev) => prev,
+  },
 });

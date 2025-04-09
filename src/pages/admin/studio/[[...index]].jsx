@@ -46,6 +46,10 @@ export default function StudioPage() {
         schema: {
           types: schemaTypes,
         },
+        document: {
+          // Enable document actions, including preparation hooks
+          actions: (prev) => prev,
+        },
         cors: {
           allowOrigins: ["http://localhost:3000", "https://vega.earth"],
           allowCredentials: true,

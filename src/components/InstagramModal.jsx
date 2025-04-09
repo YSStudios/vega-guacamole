@@ -5,20 +5,15 @@ import styles from "../styles/ModalContent.module.scss";
 import { modalValue } from "../slices/modalSlice";
 import moment from "moment";
 import Image from "next/image";
+import { urlFor } from "../api/dataFetcher";
+import closeBtn from "../assets/svg/close-btn.svg";
 import vegalogo from "../assets/vega-logo.jpeg";
 import like from "../assets/svg/ig-like.svg";
 import comment from "../assets/svg/ig-comment.svg";
-import closeBtn from "../assets/svg/close-btn.svg";
+import { INSTAGRAM_MODAL_ASSETS } from "../types/instagram";
 
-function Post({ post, randomNum, assets }) {
-  const [likes, setLikes] = useState(0);
-  const [comments, setComments] = useState(0);
+function Post({ post }) {
   const videoRef = useRef(null);
-
-  useEffect(() => {
-    setLikes(randomNum(10000, 50000));
-    setComments(randomNum(10000, 50000));
-  }, []);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -65,16 +60,17 @@ function Post({ post, randomNum, assets }) {
     document.dispatchEvent(closeModalEvent);
   };
 
+  // Use likes/comments from Sanity if available, or fallback to default values
+  const likes =
+    post.likes || Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000;
+  const comments =
+    post.comments || Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000;
+
   return (
     <div className={styles.post} key={post.id}>
       <div className={styles.post_header}>
         <span>
-          <Image
-            src={assets.images.vegaLogo}
-            height={128}
-            width={128}
-            alt="vega logo"
-          />
+          <Image src={vegalogo} height={128} width={128} alt="vega logo" />
           vega.us
         </span>
         <p className={styles.timestamp}>{moment(post.timestamp).fromNow()}</p>
@@ -106,7 +102,7 @@ function Post({ post, randomNum, assets }) {
         <a href={post.permalink}>
           <Image
             className={styles.like}
-            src={assets.images.likeIcon}
+            src={like}
             height={32}
             width={32}
             alt="like icon"
@@ -116,7 +112,7 @@ function Post({ post, randomNum, assets }) {
         <a href={post.permalink}>
           <Image
             className={styles.comment}
-            src={assets.images.commentIcon}
+            src={comment}
             height={32}
             width={32}
             alt="comment icon"
@@ -141,11 +137,17 @@ export default function InstagramModal({
   height,
   toggle,
   instaFeed,
-  assets,
+  sanityInstaData,
 }) {
   const active = useSelector(modalValue);
   const dispatch = useDispatch();
   const maximizeRef = useRef(null);
+
+  // Use Sanity data if available, otherwise fall back to instaFeed from props
+  const posts = sanityInstaData?.posts || instaFeed;
+  const instagramProfileUrl =
+    sanityInstaData?.instagramProfile ||
+    INSTAGRAM_MODAL_ASSETS.links.instagramProfile;
 
   const handleModalResize = (modalRef, resize, window, width, height) => {
     dispatch(resize());
@@ -178,12 +180,6 @@ export default function InstagramModal({
     }
   };
 
-  const randomNum = (min, max) => {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  };
-
   const handleCloseModal = () => {
     dispatch(toggle());
     const closeModalEvent = new Event("modalClose");
@@ -199,7 +195,10 @@ export default function InstagramModal({
           className={styles.close_window}
           width={20}
           height={20}
-          onClick={() => dispatch(toggle())}
+          onClick={(e) => {
+            e.preventDefault();
+            handleCloseModal();
+          }}
         />
       </div>
       <div className={`${styles.ig_modal_title_wrap} dragTrigger`}>
@@ -222,21 +221,13 @@ export default function InstagramModal({
         </svg>
         <div className={styles.modal_title_after_line}></div>
       </div>
-      <a className={styles.follow} href="https://www.instagram.com/vega.us/">
+      <a className={styles.follow} href={instagramProfileUrl}>
         Follow
       </a>
       <div className={styles.modal_content}>
         <div ref={maximizeRef} className={styles.modal_body_instagram}>
           <div className={styles.instagram_container}>
-            {instaFeed &&
-              instaFeed.map((post) => (
-                <Post
-                  key={post.id}
-                  post={post}
-                  randomNum={randomNum}
-                  assets={assets}
-                />
-              ))}
+            {posts && posts.map((post) => <Post key={post.id} post={post} />)}
           </div>
         </div>
       </div>
