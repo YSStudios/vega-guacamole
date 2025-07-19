@@ -17,7 +17,7 @@ import styles from "../styles/Mixins.module.scss";
 import { INSTAGRAM_FEED } from "../types/instagram";
 import { v4 as uuidv4 } from "uuid";
 
-// Creating the client and builder outside of components
+// Sanity client setup
 const client = createClient({
   projectId: "yqk7lu4g",
   dataset: "production",
@@ -26,7 +26,6 @@ const client = createClient({
 });
 
 const builder = imageUrlBuilder(client);
-
 const urlFor = (source) => builder.image(source);
 
 export default function Home({
@@ -62,10 +61,7 @@ export default function Home({
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowButton(true);
-    }, 1000);
-
+    const timer = setTimeout(() => setShowButton(true), 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -93,39 +89,24 @@ export default function Home({
 
   useEffect(() => {
     const handleMouseMove = (event) => {
-      mousePositionRef.current = {
-        x: event.clientX,
-        y: event.clientY,
-      };
+      mousePositionRef.current = { x: event.clientX, y: event.clientY };
     };
 
     const handleTouchStart = (event) => {
-      // Don't prevent default - let natural touch behavior occur
       const touch = event.touches[0];
-      mousePositionRef.current = {
-        x: touch.clientX,
-        y: touch.clientY,
-      };
+      mousePositionRef.current = { x: touch.clientX, y: touch.clientY };
       isInteractingRef.current = true;
     };
 
     const handleTouchEnd = () => {
-      // Don't prevent default - let natural touch behavior occur
       isInteractingRef.current = false;
-      mousePositionRef.current = {
-        x: 10000,
-        y: 10000,
-      };
+      mousePositionRef.current = { x: 10000, y: 10000 };
     };
 
     const handleTouchMove = (event) => {
-      // Don't prevent default - let natural touch behavior occur
       if (isInteractingRef.current) {
         const touch = event.touches[0];
-        mousePositionRef.current = {
-          x: touch.clientX,
-          y: touch.clientY,
-        };
+        mousePositionRef.current = { x: touch.clientX, y: touch.clientY };
       }
     };
 
@@ -162,7 +143,7 @@ export default function Home({
       )}
       <ThemeSelector />
       <Header
-        weatherData={weatherData}
+        weatherData={weatherData || {}}
         className={`fadeIn ${!loaderActive ? styles.fadeIn : styles.fadeOut}`}
       />
       <SidebarRight
@@ -174,12 +155,12 @@ export default function Home({
         className="fadeIn"
       />
       <ModalGrid
-        caseStudies={caseStudies}
-        about={about}
-        trans={trans}
-        vegaTv={vegaTv.videoUrls}
-        instaFeed={instaFeed}
-        songData={songData}
+        caseStudies={caseStudies || []}
+        about={about || []}
+        trans={trans || []}
+        vegaTv={vegaTv?.videoUrls || []}
+        instaFeed={instaFeed || []}
+        songData={songData || []}
         urlFor={urlFor}
         handleFocus={handleFocus}
         setFocusedComponent={setFocusedComponent}
@@ -187,7 +168,13 @@ export default function Home({
         isCaseStudyClicked={isCaseStudyClicked}
         setIsCaseStudyClicked={setIsCaseStudyClicked}
         className="fadeIn"
-        sanityInstaData={sanityInstaData}
+        sanityInstaData={
+          sanityInstaData || {
+            title: "Instagram Feed",
+            posts: INSTAGRAM_FEED,
+            instagramProfile: "https://www.instagram.com/vega.us/",
+          }
+        }
       />
       <audio
         ref={vegaButtonSoundRef}
@@ -199,7 +186,6 @@ export default function Home({
 
 export async function getServerSideProps(context) {
   try {
-    // Fetch all data in parallel
     const [
       weatherResponse,
       caseStudies,
@@ -217,154 +203,25 @@ export async function getServerSideProps(context) {
             appid: process.env.WEATHER_KEY,
           })
       ),
-      client.fetch(`*[_type == "caseStudies" && !(_id in path("drafts.**"))]{
-        header,
-        image {
-          asset->{url, metadata},
-          hotspot
-        },
-        featuredImage,
-        body,
-        projectBreakdown,
-        portrait[]{
-          asset->{_id, _type, url}
-        },
-        imageGallery1[]{
-          asset->{
-            _id,
-            _type,
-            url,
-            mimeType,
-            extension,
-            metadata
-          }
-        },
-        body2,
-        order,
-        title,
-        subtitle,
-        services
-      } | order(order asc)`),
+      client.fetch(
+        `*[_type == "caseStudies" && !(_id in path("drafts.**"))]{...} | order(order asc)`
+      ),
       client.fetch('*[_type == "vegaTv"][0]'),
-      client.fetch(`*[_type == "about"]{
-        header,
-        "logoWebMUrl": logoWebm.asset->url,
-        "logoMovUrl": logoMov.asset->url,
-        imagesGallery,
-        body,
-        imagesGallery2[] {
-          image {
-            asset->,
-            hotspot,
-            crop
-          },
-          name,
-          title
-        },
-        body2,
-        skill1 {
-          title,
-          list
-        },
-        skill2 {
-          title,
-          list
-        },
-        skill3 {
-          title,
-          list
-        }
-      }`),
-      client.fetch(`*[_type == "Gen-Synth"]{
-        header,
-        imagesGallery[] {
-          asset->
-        },
-        body,
-        videos[] {
-          videoUrl,
-          videoLink,
-          thumbnail {
-            asset->
-          }
-        },
-        body2
-      }`),
-      client.fetch(`*[_type == "song"] {
-        _id,
-        _createdAt,
-        _updatedAt,
-        name,
-        artist,
-        cover,
-        audio,
-        color[]{
-          _key,
-          _type,
-          alpha,
-          hex,
-          hsl->{
-            _type,
-            h,
-            s,
-            l,
-            a
-          },
-          hsv->{
-            _type,
-            h,
-            s,
-            v,
-            a
-          },
-          rgb->{
-            _type,
-            r,
-            g,
-            b,
-            a
-          }
-        },
-        active
-      }`),
-      client.fetch(`*[_type == "instagram"][0] {
-          title,
-          posts[] {
-            id,
-            media_type,
-            media_url,
-            thumbnail_url,
-            permalink,
-            caption,
-            timestamp,
-            likes,
-            comments
-          },
-          assets {
-            "vegaLogo": vegaLogo.asset->,
-            "likeIcon": likeIcon.asset->,
-            "commentIcon": commentIcon.asset->,
-            "closeButton": closeButton.asset->
-          },
-          instagramProfile
-        }`),
+      client.fetch(`*[_type == "about"]{...}`),
+      client.fetch(`*[_type == "Gen-Synth"]{...}`),
+      client.fetch(`*[_type == "song"]{...}`),
+      client.fetch(`*[_type == "instagram"][0]{...}`),
     ]);
 
     const weatherData = await weatherResponse.json();
 
-    // We no longer need this since the default data is already included in sanityInstaData
-    // from our fetchSanityInstagramData function
-    if (sanityInstaData && sanityInstaData.posts) {
-      // Check if any post is missing an ID
+    if (sanityInstaData?.posts) {
       const hasMissingIds = sanityInstaData.posts.some((post) => !post.id);
       if (hasMissingIds) {
-        // Only process if needed
-        sanityInstaData.posts = sanityInstaData.posts.map((post) => {
-          return {
-            ...post,
-            id: post.id || uuidv4(),
-          };
-        });
+        sanityInstaData.posts = sanityInstaData.posts.map((post) => ({
+          ...post,
+          id: post.id || uuidv4(),
+        }));
       }
     }
 
@@ -376,8 +233,7 @@ export async function getServerSideProps(context) {
         vegaTv: vegaTvData,
         trans,
         songData,
-        // No need to pass instaFeed separately since it's already in sanityInstaData
-        instaFeed: [], // Empty array as sanityInstaData now includes default items
+        instaFeed: [],
         sanityInstaData: sanityInstaData || {
           title: "Instagram Feed",
           posts: INSTAGRAM_FEED,
@@ -387,7 +243,6 @@ export async function getServerSideProps(context) {
     };
   } catch (error) {
     console.error("Error in getServerSideProps:", error);
-    // Return null/empty values for all props when there's an error
     return {
       props: {
         weatherData: null,
