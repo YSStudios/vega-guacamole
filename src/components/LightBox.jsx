@@ -3,6 +3,15 @@ import { useDispatch } from "react-redux";
 import Image from "next/image";
 import styles from "../styles/Styles.module.scss";
 import ModalNav from "./ModalNav";
+import { createClient } from "@sanity/client";
+
+// Sanity client setup
+const client = createClient({
+  projectId: "yqk7lu4g",
+  dataset: "production",
+  apiVersion: "2023-03-11",
+  useCdn: true,
+});
 
 export default function Lightbox({ content, onClose, urlFor, modalName, handleModalResize, modalRef, resize, toggle }) {
   if (!content) {
@@ -12,18 +21,29 @@ export default function Lightbox({ content, onClose, urlFor, modalName, handleMo
   const dispatch = useDispatch();
   const maximizeRef = useRef(null);
 
-  const isVideo = content.asset && content.asset._type === "sanity.fileAsset";
+  const isVideo = (content.asset && content.asset._type === "sanity.fileAsset") || content._type === "file";
+  const isImage = (content.asset && content.asset._type === "sanity.imageAsset") || content._type === "image";
 
   const renderContent = () => {
+    
     if (isVideo) {
-      const videoUrl = content.asset.url;
-      return (
+      let videoUrl;
+      if (content.asset?.url) {
+        videoUrl = content.asset.url;
+      } else if (content?.asset?._ref) {
+        // Handle Sanity asset reference
+        const assetRef = content.asset._ref;
+        videoUrl = `https://cdn.sanity.io/files/${client.config().projectId}/${client.config().dataset}/${assetRef.replace('file-', '').replace('-mp4', '.mp4')}`;
+      }
+      
+      return videoUrl ? (
           <video
             src={videoUrl}
             controls
             autoPlay
             loop
 			muted
+			preload="metadata"
 			objectFit="contain"
 			//make the width and height responsive
 			//give it a max width and height of half the screen size
@@ -35,20 +55,27 @@ export default function Lightbox({ content, onClose, urlFor, modalName, handleMo
           >
             Your browser does not support the video tag.
           </video>
-      );
-    } else {
+      ) : null;
+    } else if (isImage) {
       return (
           <Image
-            src={urlFor(content).url()}
+            src={urlFor(content)
+              .width(1920)
+              .format("webp")
+              .quality(85)
+              .fit("max")
+              .url()}
             alt="Lightbox content"
 			layout="responsive"
-			width={typeof window !== 'undefined' ? window.innerWidth : undefined}
-			height={typeof window !== 'undefined' ? window.innerHeight : undefined}
+			width={1920}
+			height={1080}
             style={{ objectFit: 'contain' }}
             priority
             className={styles.lightbox_image}
           />
       );
+    } else {
+      return null;
     }
   };
 

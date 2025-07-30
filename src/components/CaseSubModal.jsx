@@ -5,6 +5,15 @@ import Image from "next/image";
 import PortableText from "react-portable-text";
 import ModalNav from "./ModalNav";
 import { useDispatch } from "react-redux";
+import { createClient } from "@sanity/client";
+
+// Sanity client setup
+const client = createClient({
+  projectId: "yqk7lu4g",
+  dataset: "production",
+  apiVersion: "2023-03-11",
+  useCdn: true,
+});
 
 export default function CaseSubModal({
 	modalName,
@@ -34,16 +43,62 @@ export default function CaseSubModal({
 
 	const [imageVersion, setImageVersion] = useState(Date.now());
 	const [titleFontSize, setTitleFontSize] = useState(null);
+	const [preloadedImages, setPreloadedImages] = useState(new Set());
 
 	useEffect(() => {
 		setImageVersion(Date.now());
+		
+		// Preload all gallery images for faster lightbox loading
+		const preloadImages = () => {
+			if (modalData.imageGallery1) {
+				modalData.imageGallery1.forEach((content, index) => {
+					if (content._type === "image") {
+						const fullResUrl = urlFor(content)
+							.width(1920)
+							.format("webp")
+							.quality(85)
+							.fit("max")
+							.url();
+							
+						const img = new window.Image();
+						img.src = fullResUrl;
+						img.onload = () => {
+							setPreloadedImages(prev => new Set([...prev, fullResUrl]));
+						};
+					}
+				});
+			}
+			
+			// Preload portrait at full resolution
+			if (modalData.portrait && modalData.portrait.length > 0) {
+				const portraitItem = modalData.portrait[0];
+				if (portraitItem._type === "image") {
+					const fullResUrl = urlFor(portraitItem)
+						.width(1920)
+						.format("webp")
+						.quality(85)
+						.fit("max")
+						.url();
+						
+					const img = new window.Image();
+					img.src = fullResUrl;
+					img.onload = () => {
+						setPreloadedImages(prev => new Set([...prev, fullResUrl]));
+					};
+				}
+			}
+		};
+		
+		// Delay preloading to not interfere with initial render
+		const timeoutId = setTimeout(preloadImages, 500);
+		return () => clearTimeout(timeoutId);
 	}, [modalData]);
 
 	function isGif(url) {
 		return typeof url === "string" && url.toLowerCase().endsWith(".gif");
 	}
 
-	function ProgressiveImage({ src, placeholderSrc, alt }) {
+	function ProgressiveImage({ src, placeholderSrc, alt, priority = false }) {
 		const [imgSrc, setImgSrc] = useState(
 			isGif(src) ? src : placeholderSrc || src
 		);
@@ -67,6 +122,7 @@ export default function CaseSubModal({
 				src={imgSrc}
 				alt={alt}
 				fill
+				priority={priority}
 				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 				style={{
 					filter:
@@ -88,7 +144,8 @@ export default function CaseSubModal({
 			  <div className={imageGrid}>
 				{images.map((content, index) => {
 				  const assetType = content?.asset?._type;
-				  const isVideoAsset = assetType === "sanity.fileAsset";
+				  const isVideoAsset = assetType === "sanity.fileAsset" || content?._type === "file";
+				  const isImageAsset = assetType === "sanity.imageAsset" || content?._type === "image";
 				  
 				  return (
 					<div
@@ -104,35 +161,51 @@ export default function CaseSubModal({
 					  style={{ position: "relative" }}
 					>
 					  {isVideoAsset ? (
-						<video
-						  src={content.asset.url}
-						  autoPlay={true}
-						  loop
-						  muted
-						  playsInline
-						  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-						>
-						  Your browser does not support the video tag.
-						</video>
-					  ) : (
+						(() => {
+						  let videoUrl;
+						  if (content.asset?.url) {
+							videoUrl = content.asset.url;
+						  } else if (content?.asset?._ref) {
+							// Handle Sanity asset reference
+							const assetRef = content.asset._ref;
+							videoUrl = `https://cdn.sanity.io/files/${client.config().projectId}/${client.config().dataset}/${assetRef.replace('file-', '').replace('-mp4', '.mp4')}`;
+						  }
+						  
+						  return videoUrl ? (
+							<video
+							  src={videoUrl}
+							  autoPlay={true}
+							  loop
+							  muted
+							  playsInline
+							  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+							>
+							  Your browser does not support the video tag.
+							</video>
+						  ) : null;
+						})()
+					  ) : isImageAsset ? (
 						<ProgressiveImage
 						  src={
 							isGif(content?.asset?.url)
 							  ? urlFor(content).url()
 							  : urlFor(content)
+								  .width(600)
 								  .format("webp")
-								  .quality(80)
-								  .fit("fillmax")
+								  .quality(60)
+								  .fit("crop")
+								  .auto("format")
 								  .url()
 						  }
 						  placeholderSrc={
 							isGif(content?.asset?.url)
 							  ? null
-							  : urlFor(content).width(10).quality(20).blur(10).url()
+							  : urlFor(content).width(20).quality(30).blur(20).url()
 						  }
 						  alt={`${galleryKey} Slide ${index}`}
+						  priority={index < 3}
 						/>
-					  )}
+					  ) : null}
 					</div>
 				  );
 				})}
@@ -201,36 +274,46 @@ export default function CaseSubModal({
 	}, []);
 
 	const renderPortrait = () => {
-		if (!modalData.portrait || !modalData.portrait.length) {
-		  return null;
+		let portraitItem;
+		if (modalData.portrait && modalData.portrait.length > 0) {
+			portraitItem = modalData.portrait[0];
+		} else if (modalData.image) {
+			portraitItem = modalData.image;
+		} else {
+			return null;
 		}
-	  
-		const portraitItem = modalData.portrait[0];
 	  
 		const assetType = portraitItem?.asset?._type;
 	  
-		if (assetType === "sanity.imageAsset") {
+		if (assetType === "sanity.imageAsset" || (portraitItem && portraitItem._type === "image")) {
 			return (
 			  <ProgressiveImage
 				src={urlFor(portraitItem)
+				  .width(800)
 				  .format("webp")
-				  .quality(80)
+				  .quality(75)
 				  .fit("max")
+				  .auto("format")
 				  .url()}
 				placeholderSrc={urlFor(portraitItem)
-				  .width(10)
-				  .quality(20)
-				  .blur(10)
+				  .width(20)
+				  .quality(30)
+				  .blur(20)
 				  .url()}
 				alt="Portrait image"
+				priority={true}
 			  />
 			);
-		} else if (assetType === "sanity.fileAsset") {
-			const videoUrl = portraitItem?.asset?.url;
-			if (!videoUrl) {
-			  console.warn("Video URL is missing from asset");
+		} else if (assetType === "sanity.fileAsset" || portraitItem._type === "file") {
+			// Handle Sanity file assets (videos) - construct URL from reference
+			const assetRef = portraitItem?.asset?._ref;
+			if (!assetRef) {
+			  console.warn("Asset reference is missing");
 			  return null;
 			}
+			
+			// Convert Sanity asset reference to CDN URL
+			const videoUrl = `https://cdn.sanity.io/files/${client.config().projectId}/${client.config().dataset}/${assetRef.replace('file-', '').replace('-mp4', '.mp4')}`;
 
 			return (
 			  <video
@@ -246,7 +329,7 @@ export default function CaseSubModal({
 			);
 		}
 
-		console.warn("Unsupported asset type or asset is null:", assetType);
+		console.warn("Unsupported asset type or asset is null:", assetType, portraitItem);
 		return null;
 	};
 	  
@@ -268,12 +351,13 @@ export default function CaseSubModal({
 					ref={maximizeRef}
 					className={styles.modal_body}
 				>
-					{modalData.portrait && modalData.portrait.length > 0 && (
+					{((modalData.portrait && modalData.portrait.length > 0) || modalData.image) && (
                     <div className={styles.col1}>
                         <div
                             className={styles.portrait}
                             onClick={() => {
-                                setCurrentContent(modalData.portrait[0]);
+                                const contentToSet = (modalData.portrait && modalData.portrait.length > 0) ? modalData.portrait[0] : modalData.image;
+                                setCurrentContent(contentToSet);
                                 if (isCaseSubFullscreen) {
                                     dispatch(setLightBoxResize(true));
                                 }
