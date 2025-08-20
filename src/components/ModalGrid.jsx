@@ -47,6 +47,7 @@ export default function ModalGrid({
   focusedComponent,
   isCaseStudyClicked,
   setIsCaseStudyClicked,
+  sanityInstaData,
 }) {
   const active = useSelector(modalValue);
   const vimeoRef = useRef(null);
@@ -460,7 +461,7 @@ export default function ModalGrid({
             id={`instagramRef`}
             draggablesRef={draggablesRef}
             instaFeed={INSTAGRAM_FEED}
-            assets={INSTAGRAM_MODAL_ASSETS}
+            sanityInstaData={sanityInstaData}
           />
         </div>
 

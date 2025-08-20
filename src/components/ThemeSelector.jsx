@@ -24,9 +24,15 @@ const ThemeSelector = () => {
   }, []);
 
   const playSound = () => {
-    if (audioElement.current) {
-      audioElement.current.currentTime = 0;
-      audioElement.current.play();
+    try {
+      if (audioElement.current && audioElement.current.readyState >= 2) {
+        audioElement.current.currentTime = 0;
+        audioElement.current.play().catch((error) => {
+          console.warn('Theme selector audio play failed:', error);
+        });
+      }
+    } catch (error) {
+      console.warn('Theme selector audio playback error:', error);
     }
   };
 
