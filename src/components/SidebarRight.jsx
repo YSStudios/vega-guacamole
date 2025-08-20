@@ -32,8 +32,16 @@ const SidebarRight = ({
   }, []);
 
   const playSound = () => {
-    audioElement.current.currentTime = 0.05;
-    audioElement.current.play();
+    try {
+      if (audioElement.current && audioElement.current.readyState >= 2) {
+        audioElement.current.currentTime = 0.05;
+        audioElement.current.play().catch((error) => {
+          console.warn('Audio play failed:', error);
+        });
+      }
+    } catch (error) {
+      console.warn('Audio playback error:', error);
+    }
   };
 
   const handleZIndex = (toggle, ref) => {

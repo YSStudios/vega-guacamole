@@ -8,6 +8,15 @@ import ModalGrid from "../components/ModalGrid";
 import IntroButton from "../components/IntroButton";
 import { createClient } from "@sanity/client";
 import imageUrlBuilder from "@sanity/image-url";
+import { 
+  fetchCaseStudies,
+  VegaTvData,
+  fetchAboutData,
+  fetchTransparencyData,
+  fetchSongData,
+  fetchWeatherData,
+  fetchSanityInstagramData
+} from "../api/dataFetcher";
 import gsap from "gsap";
 import { Draggable } from "../../gsap";
 import NoiseBackground from "../components/NoiseBackground";
@@ -184,10 +193,10 @@ export default function Home({
   );
 }
 
-export async function getServerSideProps(context) {
+export async function getStaticProps(context) {
   try {
     const [
-      weatherResponse,
+      weatherData,
       caseStudies,
       vegaTvData,
       about,
@@ -195,25 +204,14 @@ export async function getServerSideProps(context) {
       songData,
       sanityInstaData,
     ] = await Promise.all([
-      fetch(
-        "https://api.openweathermap.org/data/2.5/weather?" +
-          new URLSearchParams({
-            q: "new york",
-            units: "imperial",
-            appid: process.env.WEATHER_KEY,
-          })
-      ),
-      client.fetch(
-        `*[_type == "caseStudies" && !(_id in path("drafts.**"))]{...} | order(order asc)`
-      ),
-      client.fetch('*[_type == "vegaTv"][0]'),
-      client.fetch(`*[_type == "about"]{...}`),
-      client.fetch(`*[_type == "Gen-Synth"]{...}`),
-      client.fetch(`*[_type == "song"]{...}`),
-      client.fetch(`*[_type == "instagram"][0]{...}`),
+      fetchWeatherData(),
+      fetchCaseStudies(),
+      VegaTvData(),
+      fetchAboutData(),
+      fetchTransparencyData(),
+      fetchSongData(),
+      fetchSanityInstagramData(),
     ]);
-
-    const weatherData = await weatherResponse.json();
 
     if (sanityInstaData?.posts) {
       const hasMissingIds = sanityInstaData.posts.some((post) => !post.id);
@@ -240,9 +238,11 @@ export async function getServerSideProps(context) {
           instagramProfile: "https://www.instagram.com/vega.us/",
         },
       },
+      // Enable ISR - revalidate every 5 minutes in production
+      revalidate: process.env.NODE_ENV === 'development' ? 1 : 300,
     };
   } catch (error) {
-    console.error("Error in getServerSideProps:", error);
+    console.error("Error in getStaticProps:", error);
     return {
       props: {
         weatherData: null,
@@ -258,6 +258,7 @@ export async function getServerSideProps(context) {
           instagramProfile: "https://www.instagram.com/vega.us/",
         },
       },
+      revalidate: 60, // Retry in 1 minute on error
     };
   }
 }

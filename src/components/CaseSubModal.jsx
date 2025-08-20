@@ -46,6 +46,29 @@ export default function CaseSubModal({
 	const [preloadedImages, setPreloadedImages] = useState(new Set());
 
 	useEffect(() => {
+		console.log('Full modalData:', modalData);
+		
+		// Search for video assets across all fields
+		const searchForVideos = (obj, path = '') => {
+			if (!obj) return;
+			
+			if (typeof obj === 'object' && obj.asset && obj.asset._ref) {
+				if (obj.asset._ref.startsWith('file-')) {
+					console.log(`Found video asset at ${path}:`, obj);
+				}
+			}
+			
+			if (Array.isArray(obj)) {
+				obj.forEach((item, index) => searchForVideos(item, `${path}[${index}]`));
+			} else if (typeof obj === 'object' && obj !== null) {
+				Object.keys(obj).forEach(key => {
+					searchForVideos(obj[key], path ? `${path}.${key}` : key);
+				});
+			}
+		};
+		
+		searchForVideos(modalData, 'modalData');
+		
 		setImageVersion(Date.now());
 		
 		// Preload all gallery images for faster lightbox loading
@@ -143,9 +166,18 @@ export default function CaseSubModal({
 			return (
 			  <div className={imageGrid}>
 				{images.map((content, index) => {
+				  console.log('Gallery item:', content, 'index:', index);
 				  const assetType = content?.asset?._type;
-				  const isVideoAsset = assetType === "sanity.fileAsset" || content?._type === "file";
-				  const isImageAsset = assetType === "sanity.imageAsset" || content?._type === "image";
+				  const assetRef = content?.asset?._ref;
+				  
+				  // Determine if it's video or image based on the asset reference prefix
+				  // Videos can have _type: "image" but start with "file-", so check reference first
+				  const isVideoAsset = (assetRef && assetRef.startsWith('file-')) || 
+									   (assetType === "sanity.fileAsset" || content?._type === "file");
+				  const isImageAsset = (assetRef && assetRef.startsWith('image-')) && 
+									   !isVideoAsset;
+				  
+				  console.log('Asset type:', assetType, 'Asset ref:', assetRef, 'isVideo:', isVideoAsset, 'isImage:', isImageAsset);
 				  
 				  return (
 					<div
@@ -168,8 +200,29 @@ export default function CaseSubModal({
 						  } else if (content?.asset?._ref) {
 							// Handle Sanity asset reference
 							const assetRef = content.asset._ref;
-							videoUrl = `https://cdn.sanity.io/files/${client.config().projectId}/${client.config().dataset}/${assetRef.replace('file-', '').replace('-mp4', '.mp4')}`;
+							console.log('Processing asset reference:', assetRef);
+							
+							// More robust file extension detection
+							let fileExtension = '.mp4'; // default
+							const refLower = assetRef.toLowerCase();
+							if (refLower.includes('-mov')) fileExtension = '.mov';
+							else if (refLower.includes('-webm')) fileExtension = '.webm';
+							else if (refLower.includes('-avi')) fileExtension = '.avi';
+							else if (refLower.includes('-mkv')) fileExtension = '.mkv';
+							else if (refLower.includes('-mp4')) fileExtension = '.mp4';
+							
+							// Extract the hash part and construct URL
+							// Remove 'file-' prefix and any format suffix to get the hash
+							const hashMatch = assetRef.match(/^file-([a-f0-9]+)/);
+							if (hashMatch) {
+								const hash = hashMatch[1];
+								videoUrl = `https://cdn.sanity.io/files/${client.config().projectId}/${client.config().dataset}/${hash}${fileExtension}`;
+							} else {
+								console.warn('Could not extract hash from asset reference:', assetRef);
+							}
 						  }
+						  
+						  console.log('Video URL constructed:', videoUrl, 'from asset:', content.asset);
 						  
 						  return videoUrl ? (
 							<video
@@ -179,10 +232,17 @@ export default function CaseSubModal({
 							  muted
 							  playsInline
 							  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+							  onError={(e) => {
+								console.error('Gallery video failed to load:', videoUrl, e);
+							  }}
 							>
 							  Your browser does not support the video tag.
 							</video>
-						  ) : null;
+						  ) : (
+							<div style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+							  <span>Video not found</span>
+							</div>
+						  );
 						})()
 					  ) : isImageAsset ? (
 						<ProgressiveImage
@@ -280,12 +340,81 @@ export default function CaseSubModal({
 		} else if (modalData.image) {
 			portraitItem = modalData.image;
 		} else {
+			console.log('No portrait or image found in modalData');
 			return null;
 		}
+		
+		console.log('=== PORTRAIT DEBUG ===');
+		console.log('Portrait item:', portraitItem);
+		console.log('Portrait item _type:', portraitItem?._type);
+		console.log('Portrait asset type:', portraitItem?.asset?._type);
+		console.log('Portrait asset ref:', portraitItem?.asset?._ref);
 	  
 		const assetType = portraitItem?.asset?._type;
+		const assetRef = portraitItem?.asset?._ref;
+		
+		// Check if it's a video asset first (by reference prefix)
+		const isVideoByRef = assetRef && assetRef.startsWith('file-');
+		
+		console.log('Is video by reference:', isVideoByRef);
+		console.log('=====================');
 	  
-		if (assetType === "sanity.imageAsset" || (portraitItem && portraitItem._type === "image")) {
+		if (isVideoByRef || assetType === "sanity.fileAsset" || portraitItem._type === "file") {
+			// Handle video assets
+			let videoUrl;
+			
+			// Check if we have a direct URL first (this is the case for portrait)
+			if (portraitItem.asset?.url) {
+				videoUrl = portraitItem.asset.url;
+				console.log('Using direct portrait video URL:', videoUrl);
+			} else if (assetRef) {
+				// Fallback to constructing URL from reference
+				console.log('Processing portrait asset reference:', assetRef);
+				
+				// More robust file extension detection for portrait videos
+				let fileExtension = '.mp4'; // default
+				const refLower = assetRef.toLowerCase();
+				if (refLower.includes('-mov')) fileExtension = '.mov';
+				else if (refLower.includes('-webm')) fileExtension = '.webm';
+				else if (refLower.includes('-avi')) fileExtension = '.avi';
+				else if (refLower.includes('-mkv')) fileExtension = '.mkv';
+				else if (refLower.includes('-mp4')) fileExtension = '.mp4';
+				
+				// Extract the hash part and construct URL
+				const hashMatch = assetRef.match(/^file-([a-f0-9]+)/);
+				if (hashMatch) {
+					const hash = hashMatch[1];
+					videoUrl = `https://cdn.sanity.io/files/${client.config().projectId}/${client.config().dataset}/${hash}${fileExtension}`;
+				} else {
+					console.warn('Could not extract hash from portrait asset reference:', assetRef);
+					return null;
+				}
+				
+				console.log('Portrait video URL constructed:', videoUrl);
+			} else {
+				console.warn("Portrait asset has no URL or reference");
+				return null;
+			}
+
+			return (
+			  <video
+				src={videoUrl}
+				autoPlay={true}
+				loop
+				muted
+				playsInline
+				style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+				onError={(e) => {
+					console.error('Portrait video failed to load:', videoUrl, e);
+				}}
+				onLoadStart={() => console.log('Portrait video started loading')}
+				onCanPlay={() => console.log('Portrait video can play')}
+			  >
+				Your browser does not support the video tag.
+			  </video>
+			);
+		} else if (assetType === "sanity.imageAsset" || (portraitItem && portraitItem._type === "image")) {
+			// Handle image assets
 			return (
 			  <ProgressiveImage
 				src={urlFor(portraitItem)
@@ -303,29 +432,6 @@ export default function CaseSubModal({
 				alt="Portrait image"
 				priority={true}
 			  />
-			);
-		} else if (assetType === "sanity.fileAsset" || portraitItem._type === "file") {
-			// Handle Sanity file assets (videos) - construct URL from reference
-			const assetRef = portraitItem?.asset?._ref;
-			if (!assetRef) {
-			  console.warn("Asset reference is missing");
-			  return null;
-			}
-			
-			// Convert Sanity asset reference to CDN URL
-			const videoUrl = `https://cdn.sanity.io/files/${client.config().projectId}/${client.config().dataset}/${assetRef.replace('file-', '').replace('-mp4', '.mp4')}`;
-
-			return (
-			  <video
-				src={videoUrl}
-				autoPlay={true}
-				loop
-				muted
-				playsInline
-				style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-			  >
-				Your browser does not support the video tag.
-			  </video>
 			);
 		}
 

@@ -3,12 +3,16 @@
   "main": "firebaseFunctions.js",
   "scripts": {
     "dev": "next src/",
+    "dev:fresh": "npm run clear-cache && next src/",
     "build": "next build src/",
     "start": "next start src/",
     "serve": "npm run build && firebase emulators:start --only functions,hosting",
     "shell": "npm run build && firebase functions:shell",
     "deploy": "firebase deploy --only functions,hosting",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "clear-cache": "node scripts/clear-cache.js",
+    "clear-instagram-cache": "node src/scripts/clear-instagram-cache.js",
+    "cache-stats": "du -sh .cache/ .next/ || echo 'No cache found'"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
