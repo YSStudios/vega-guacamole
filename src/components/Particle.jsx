@@ -9,7 +9,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import styles from "../styles/Particle.module.scss";
 import gsap from "gsap";
 import MatrixText from "./MatrixText";
-
+import vegaLogoImage from "../assets/vega-round-logo.png";
 const ParticleCRTShader = {
   uniforms: {
     time: { value: 0 },
@@ -344,8 +344,9 @@ const MapComponent = ({ animationSpeedRef }) => {
     },
   };
 
-  const vegastudioLogo =
-    "https://res.cloudinary.com/dtps5ugbf/image/upload/v1728682216/undefined_-_Imgur_qaenka.png";
+  const vegastudioLogo = vegaLogoImage.src;
+
+
 
   const themeImages = {
     themeActive1: vegastudioLogo,
